@@ -10,6 +10,8 @@ class SecureStorageService {
 
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
+  static const String _privateKeyKey = 'private_key';
+  static const String _publicKeyKey = 'public_key';
 
   Future<void> saveAccessToken(String token) async {
     await _storage.write(key: _accessTokenKey, value: token);
@@ -27,9 +29,24 @@ class SecureStorageService {
     return await _storage.read(key: _refreshTokenKey);
   }
 
+  Future<void> saveKeyPair({required String privateKey, required String publicKey}) async {
+    await _storage.write(key: _privateKeyKey, value: privateKey);
+    await _storage.write(key: _publicKeyKey, value: publicKey);
+  }
+
+  Future<String?> getPrivateKey() async {
+    return await _storage.read(key: _privateKeyKey);
+  }
+
+  Future<String?> getPublicKey() async {
+    return await _storage.read(key: _publicKeyKey);
+  }
+
   Future<void> clearTokens() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);
+    await _storage.delete(key: _privateKeyKey);
+    await _storage.delete(key: _publicKeyKey);
   }
 }
 
