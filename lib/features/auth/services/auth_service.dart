@@ -12,18 +12,27 @@ class AuthService {
   const AuthService(this._dio, this._storage);
 
   Future<void> register(String username, String password) async {
+    // Generate a simple device fingerprint (in a real app, use device_info_plus)
+    final deviceFp = 'android-emulator-fp';
+    
     final response = await _dio.post('/auth/register', data: {
       'username': username,
       'password': password,
+      'device_name': 'Android Emulator',
+      'device_fp': deviceFp,
+      'platform': 'android',
     });
     
     await _handleAuthResponse(response);
   }
 
   Future<void> login(String username, String password) async {
+    final deviceFp = 'android-emulator-fp';
+
     final response = await _dio.post('/auth/login', data: {
       'username': username,
       'password': password,
+      'device_fp': deviceFp,
     });
     
     await _handleAuthResponse(response);

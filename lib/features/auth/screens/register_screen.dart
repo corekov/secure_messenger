@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+
+import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -65,9 +68,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   backgroundColor: Colors.blueAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {
-                  // Trigger register
-                  context.go('/');
+                onPressed: () async {
+                  try {
+                    await ref.read(authProvider.notifier).register(_usernameController.text, _passwordController.text);
+                  } catch (e) {
+                    if (context.mounted) {
+                      String errorMessage = e.toString().replaceAll('Exception: ', '');
+                      if (e is DioException && e.response?.data != null) {
+                        errorMessage = e.response!.data.toString();
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(errorMessage)),
+                      );
+                    }
+                  }
                 },
                 child: const Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16)),
               ),

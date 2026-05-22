@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
+
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -38,6 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
               TextField(
+                key: const ValueKey('username_input'),
                 controller: _usernameController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
@@ -49,6 +53,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 16),
               TextField(
+                key: const ValueKey('password_input'),
                 controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -61,18 +66,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
+                key: const ValueKey('login_button'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {
-                  // Trigger login (to be wired to authProvider)
-                  context.go('/');
+                onPressed: () async {
+                  try {
+                    await ref.read(authProvider.notifier).login(_usernameController.text, _passwordController.text);
+                  } catch (e) {
+                    if (context.mounted) {
+                      String errorMessage = e.toString().replaceAll('Exception: ', '');
+                      if (e is DioException && e.response?.data != null) {
+                        errorMessage = e.response!.data.toString();
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(errorMessage)),
+                      );
+                    }
+                  }
                 },
                 child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16)),
               ),
               const SizedBox(height: 16),
               TextButton(
+                key: const ValueKey('register_link'),
                 onPressed: () => context.go('/register'),
                 child: const Text('Create an account', style: TextStyle(color: Colors.white70)),
               ),

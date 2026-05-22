@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -24,7 +25,12 @@ class WebSocketService {
   Timer? _reconnectTimer;
   
   static const int _maxReconnectAttempts = 10;
-  static const String _wsUrl = String.fromEnvironment('WS_URL', defaultValue: 'ws://localhost:8080/api/v1/ws');
+  static final String _wsUrl = String.fromEnvironment(
+    'WS_URL',
+    defaultValue: (defaultTargetPlatform == TargetPlatform.android && !kIsWeb)
+        ? 'ws://10.0.2.2:8080/api/v1/ws'
+        : 'ws://localhost:8080/api/v1/ws',
+  );
 
   WebSocketService(this._storage);
 

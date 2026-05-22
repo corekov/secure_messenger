@@ -1,16 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../storage/secure_storage_service.dart';
+import 'package:flutter/foundation.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 part 'dio_client.g.dart';
 
 class AuthInterceptor extends QueuedInterceptor {
   final SecureStorageService _storage;
-  final Auth _authProvider;
+  final void Function() _onLogout;
   final Dio _dio;
 
-  AuthInterceptor(this._storage, this._authProvider, this._dio);
+  AuthInterceptor(this._storage, this._onLogout, this._dio);
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
@@ -39,7 +40,7 @@ class AuthInterceptor extends QueuedInterceptor {
         }
       } else {
         // Refresh failed, logout
-        _authProvider.forceLogout();
+        _onLogout();
         return handler.next(err);
       }
     }
@@ -77,9 +78,13 @@ class AuthInterceptor extends QueuedInterceptor {
 
 @riverpod
 Dio dioClient(Ref ref) {
+  final defaultUrl = (defaultTargetPlatform == TargetPlatform.android && !kIsWeb) 
+      ? 'http://10.0.2.2:8080/api/v1' 
+      : 'http://localhost:8080/api/v1';
+
   final dio = Dio(
     BaseOptions(
-      baseUrl: const String.fromEnvironment('API_URL', defaultValue: 'http://localhost:8080/api/v1'),
+      baseUrl: String.fromEnvironment('API_URL', defaultValue: defaultUrl),
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       contentType: 'application/json',
@@ -87,9 +92,12 @@ Dio dioClient(Ref ref) {
   );
 
   final storage = ref.watch(secureStorageServiceProvider);
-  final authProviderValue = ref.watch(authProvider.notifier);
 
-  dio.interceptors.add(AuthInterceptor(storage, authProviderValue, dio));
+  dio.interceptors.add(AuthInterceptor(
+    storage, 
+    () => ref.read(authProvider.notifier).forceLogout(), 
+    dio,
+  ));
 
   return dio;
 }

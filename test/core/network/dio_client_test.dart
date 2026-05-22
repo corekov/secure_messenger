@@ -3,10 +3,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:dio/dio.dart';
 import 'package:secure_messenger/core/network/dio_client.dart';
 import 'package:secure_messenger/core/storage/secure_storage_service.dart';
-import 'package:secure_messenger/features/auth/providers/auth_provider.dart';
 
 class MockSecureStorage extends Mock implements SecureStorageService {}
-class MockAuthProvider extends Mock implements Auth {}
 class MockDio extends Mock implements Dio {}
 class MockErrorInterceptorHandler extends Mock implements ErrorInterceptorHandler {}
 class MockRequestInterceptorHandler extends Mock implements RequestInterceptorHandler {}
@@ -14,7 +12,6 @@ class MockRequestInterceptorHandler extends Mock implements RequestInterceptorHa
 void main() {
   late AuthInterceptor interceptor;
   late MockSecureStorage mockStorage;
-  late MockAuthProvider mockAuthProvider;
   late MockDio mockDio;
 
   setUpAll(() {
@@ -24,12 +21,11 @@ void main() {
 
   setUp(() {
     mockStorage = MockSecureStorage();
-    mockAuthProvider = MockAuthProvider();
     mockDio = MockDio();
 
     when(() => mockDio.options).thenReturn(BaseOptions(baseUrl: 'http://test'));
 
-    interceptor = AuthInterceptor(mockStorage, mockAuthProvider, mockDio);
+    interceptor = AuthInterceptor(mockStorage, () {}, mockDio);
   });
 
   group('AuthInterceptor', () {

@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../services/auth_service.dart';
+import '../../../core/storage/secure_storage_service.dart';
 
 part 'auth_provider.g.dart';
 
@@ -7,7 +8,16 @@ part 'auth_provider.g.dart';
 class Auth extends _$Auth {
   @override
   bool build() {
-    return false; // represents unauthenticated state initially
+    _checkInitialAuth();
+    return false;
+  }
+
+  Future<void> _checkInitialAuth() async {
+    final storage = ref.read(secureStorageServiceProvider);
+    final token = await storage.getAccessToken();
+    if (token != null) {
+      state = true;
+    }
   }
 
   Future<void> login(String username, String password) async {
@@ -18,6 +28,7 @@ class Auth extends _$Auth {
 
   Future<void> register(String username, String password) async {
     final authService = ref.read(authServiceProvider);
+    
     await authService.register(username, password);
     state = true;
   }
