@@ -9,6 +9,57 @@ part of 'auth_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(AuthInit)
+final authInitProvider = AuthInitProvider._();
+
+final class AuthInitProvider extends $NotifierProvider<AuthInit, bool> {
+  AuthInitProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'authInitProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$authInitHash();
+
+  @$internal
+  @override
+  AuthInit create() => AuthInit();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$authInitHash() => r'9070451faeed780d6cf2f5709634fde4fd83cc40';
+
+abstract class _$AuthInit extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(Auth)
 final authProvider = AuthProvider._();
 
@@ -40,7 +91,7 @@ final class AuthProvider extends $NotifierProvider<Auth, bool> {
   }
 }
 
-String _$authHash() => r'5aa1e2168b8580a5fe7be7f612e4ed1a67f61ec2';
+String _$authHash() => r'a32299889d9b8f813c2a7070c1a69e9a9e237395';
 
 abstract class _$Auth extends $Notifier<bool> {
   bool build();

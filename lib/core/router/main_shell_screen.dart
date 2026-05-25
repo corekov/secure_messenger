@@ -10,28 +10,38 @@ class MainShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: const Color(0xFF1E1E1E),
-        indicatorColor: Colors.blueAccent.withAlpha(50),
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (int index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline, color: Colors.white70),
-            selectedIcon: Icon(Icons.chat_bubble, color: Colors.blueAccent),
-            label: 'Chats',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.white.withAlpha(20), width: 1),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: Colors.white70),
-            selectedIcon: Icon(Icons.person, color: Colors.blueAccent),
-            label: 'Profile',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          height: 70,
+          backgroundColor: const Color(0xFF121212),
+          surfaceTintColor: Colors.transparent,
+          indicatorColor: Colors.blueAccent.withAlpha(40),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: (int index) {
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.chat_bubble_outline, color: Colors.white70),
+              selectedIcon: Icon(Icons.chat_bubble, color: Colors.blueAccent),
+              label: 'Chats',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline, color: Colors.white70),
+              selectedIcon: Icon(Icons.person, color: Colors.blueAccent),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

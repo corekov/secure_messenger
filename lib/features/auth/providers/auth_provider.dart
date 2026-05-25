@@ -7,6 +7,16 @@ import '../../user/services/user_service.dart';
 part 'auth_provider.g.dart';
 
 @riverpod
+class AuthInit extends _$AuthInit {
+  @override
+  bool build() => true;
+
+  void complete() {
+    state = false;
+  }
+}
+
+@riverpod
 class Auth extends _$Auth {
   @override
   bool build() {
@@ -19,12 +29,53 @@ class Auth extends _$Auth {
     final token = await storage.getAccessToken();
     if (token != null) {
       state = true;
+
+      // Ensure encryption keys are initialized and uploaded on app start
+      // This heals the state if the user registered before keys logic was added,
+      // or if the backend database was wiped.
+      final encryptionService = ref.read(encryptionServiceProvider);
+      await encryptionService.initialize();
+      final publicKey = await encryptionService.getPublicKeyBase64();
+
+      final userService = ref.read(userServiceProvider);
+      try {
+        await userService.uploadKeys(
+          identityKey: publicKey,
+          signedPrekey: publicKey,
+          prekeySig: 'dummy_sig',
+          oneTimeKeys: [],
+        );
+      } catch (e) {
+        // Ignore network errors on startup
+      }
     }
+    
+    // Auth check complete
+    ref.read(authInitProvider.notifier).complete();
   }
 
   Future<void> login(String username, String password) async {
     final authService = ref.read(authServiceProvider);
     await authService.login(username, password);
+    
+    // Generate/Load keys after successful login
+    final encryptionService = ref.read(encryptionServiceProvider);
+    await encryptionService.initialize();
+    final publicKey = await encryptionService.getPublicKeyBase64();
+
+    // Upload keys to server (if we don't upload, other devices can't get our key if it's a new installation)
+    final userService = ref.read(userServiceProvider);
+    try {
+      await userService.uploadKeys(
+        identityKey: publicKey,
+        signedPrekey: publicKey,
+        prekeySig: 'dummy_sig',
+        oneTimeKeys: [],
+      );
+    } catch (e) {
+      // Ignored if server rejects duplicate keys or throws an error.
+    }
+
     state = true;
   }
 
@@ -66,6 +117,8 @@ class Auth extends _$Auth {
   }
 
   void forceLogout() {
+    final storage = ref.read(secureStorageServiceProvider);
+    storage.clearTokens();
     state = false;
   }
 }

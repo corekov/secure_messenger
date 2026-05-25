@@ -42,6 +42,14 @@ class SecureStorageService {
     return await _storage.read(key: _publicKeyKey);
   }
 
+  Future<String?> getDeviceFingerprint() async {
+    return await _storage.read(key: 'device_fp');
+  }
+
+  Future<void> saveDeviceFingerprint(String fp) async {
+    await _storage.write(key: 'device_fp', value: fp);
+  }
+
   Future<void> clearTokens() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);

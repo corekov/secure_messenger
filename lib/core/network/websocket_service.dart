@@ -23,13 +23,21 @@ class WebSocketService {
   bool _isConnected = false;
   int _reconnectAttempts = 0;
   Timer? _reconnectTimer;
+  final List<Map<String, dynamic>> _offlineQueue = [];
   
   static const int _maxReconnectAttempts = 10;
+  static final String _apiUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: (defaultTargetPlatform == TargetPlatform.android && !kIsWeb)
+        ? 'http://10.0.2.2:8080/api/v1'
+        : 'http://localhost:8080/api/v1',
+  );
+
   static final String _wsUrl = String.fromEnvironment(
     'WS_URL',
-    defaultValue: (defaultTargetPlatform == TargetPlatform.android && !kIsWeb)
-        ? 'ws://10.0.2.2:8080/api/v1/ws'
-        : 'ws://localhost:8080/api/v1/ws',
+    defaultValue: _apiUrl.startsWith('https') 
+        ? '${_apiUrl.replaceFirst('https', 'wss')}/ws'
+        : '${_apiUrl.replaceFirst('http', 'ws')}/ws',
   );
 
   WebSocketService(this._storage);
@@ -49,6 +57,8 @@ class WebSocketService {
       _isConnected = true;
       _reconnectAttempts = 0;
       developer.log('WebSocket connected successfully', name: 'WebSocketService');
+      
+      _flushQueue();
 
       _subscription = _channel!.stream.listen(
         (message) {
@@ -97,11 +107,22 @@ class WebSocketService {
     _reconnectTimer = Timer(backoffDuration, connect);
   }
 
-  void send(Map<String, dynamic> payload) {
+  void send(Map<String, dynamic> data) {
     if (_isConnected && _channel != null) {
-      _channel!.sink.add(jsonEncode(payload));
+      _channel!.sink.add(jsonEncode(data));
     } else {
-      developer.log('Cannot send message, WebSocket is not connected', name: 'WebSocketService');
+      developer.log('Cannot send message, WebSocket disconnected. Queuing message.', name: 'WebSocketService');
+      _offlineQueue.add(data);
+    }
+  }
+
+  void _flushQueue() {
+    if (_offlineQueue.isNotEmpty) {
+      developer.log('Flushing ${_offlineQueue.length} queued messages.', name: 'WebSocketService');
+      while (_offlineQueue.isNotEmpty && _isConnected && _channel != null) {
+        final data = _offlineQueue.removeAt(0);
+        _channel!.sink.add(jsonEncode(data));
+      }
     }
   }
 

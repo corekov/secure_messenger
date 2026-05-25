@@ -26,71 +26,136 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Register',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                textAlign: TextAlign.center,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [Color(0xFF2C5364), Color(0xFF203A43), Color(0xFF0F2027)],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.person_add_alt_1, size: 80, color: Colors.blueAccent),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Create Account',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Join the secure messenger',
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 48),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withAlpha(30)),
+                    ),
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _usernameController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Username',
+                            labelStyle: const TextStyle(color: Colors.white70),
+                            prefixIcon: const Icon(Icons.person_outline, color: Colors.white70),
+                            filled: true,
+                            fillColor: Colors.black.withAlpha(50),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            labelStyle: const TextStyle(color: Colors.white70),
+                            prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
+                            filled: true,
+                            fillColor: Colors.black.withAlpha(50),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 8,
+                            shadowColor: Colors.blueAccent.withAlpha(100),
+                          ),
+                          onPressed: () async {
+                            try {
+                              await ref.read(authProvider.notifier).register(
+                                _usernameController.text,
+                                _passwordController.text,
+                              );
+                            } catch (e) {
+                              if (context.mounted) {
+                                String errorMessage = e.toString().replaceAll('Exception: ', '');
+                                if (e is DioException && e.response?.data != null) {
+                                  errorMessage = e.response!.data.toString();
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(errorMessage),
+                                    backgroundColor: Colors.redAccent,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text(
+                            'Sign Up',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TextButton(
+                    onPressed: () => context.go('/login'),
+                    child: const Text(
+                      'Already have an account? Login',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  filled: true,
-                  fillColor: Colors.white10,
-                  border: OutlineInputBorder(borderSide: BorderSide.none),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  filled: true,
-                  fillColor: Colors.white10,
-                  border: OutlineInputBorder(borderSide: BorderSide.none),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: () async {
-                  try {
-                    await ref.read(authProvider.notifier).register(_usernameController.text, _passwordController.text);
-                  } catch (e) {
-                    if (context.mounted) {
-                      String errorMessage = e.toString().replaceAll('Exception: ', '');
-                      if (e is DioException && e.response?.data != null) {
-                        errorMessage = e.response!.data.toString();
-                      }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(errorMessage)),
-                      );
-                    }
-                  }
-                },
-                child: const Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16)),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => context.go('/login'),
-                child: const Text('Already have an account? Login', style: TextStyle(color: Colors.white70)),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -25,6 +25,10 @@ class RouterNotifier extends ChangeNotifier {
       authProvider,
       (previous, next) => notifyListeners(),
     );
+    _ref.listen<bool>(
+      authInitProvider,
+      (previous, next) => notifyListeners(),
+    );
   }
 }
 
@@ -34,25 +38,38 @@ GoRouter appRouter(Ref ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/chats',
+    initialLocation: '/loading',
     refreshListenable: notifier,
     redirect: (context, state) {
+      final isInitializing = ref.read(authInitProvider);
+      if (isInitializing) {
+        return state.matchedLocation == '/loading' ? null : '/loading';
+      }
+
       final isAuthenticated = ref.read(authProvider);
-      
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToRegister = state.matchedLocation == '/register';
+      final isGoingToLoading = state.matchedLocation == '/loading';
 
       if (!isAuthenticated && !isGoingToLogin && !isGoingToRegister) {
         return '/login';
       }
 
-      if (isAuthenticated && (isGoingToLogin || isGoingToRegister || state.matchedLocation == '/')) {
+      if (isAuthenticated && (isGoingToLogin || isGoingToRegister || isGoingToLoading || state.matchedLocation == '/')) {
         return '/chats';
       }
 
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/loading',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShellScreen(navigationShell: navigationShell);

@@ -19,9 +19,21 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE chats ADD COLUMN peer_public_key TEXT');
+    }
+    if (oldVersion < 3) {
+      // Purge all corrupted cache data resulting from the JWT parsing bug
+      await db.execute('DELETE FROM chats');
+      await db.execute('DELETE FROM messages');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -29,6 +41,7 @@ class DatabaseService {
     const textType = 'TEXT NOT NULL';
     const boolType = 'INTEGER NOT NULL';
     const intType = 'INTEGER NOT NULL';
+    const textNullable = 'TEXT';
 
     await db.execute('''
       CREATE TABLE chats (
@@ -36,7 +49,8 @@ class DatabaseService {
         name $textType,
         last_message $textType,
         last_message_time $intType,
-        unread_count $intType
+        unread_count $intType,
+        peer_public_key $textNullable
       )
     ''');
 

@@ -22,6 +22,20 @@ class ChatService {
     });
     return response.data as Map<String, dynamic>;
   }
+
+  Future<List<Map<String, dynamic>>> getMessages(String chatId) async {
+    final response = await _dio.get('/chats/$chatId/messages');
+    final data = response.data as List;
+    return data.cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteChat(String chatId) async {
+    await _dio.delete('/chats/$chatId');
+  }
+
+  Future<void> markRead(String chatId) async {
+    await _dio.post('/chats/$chatId/read');
+  }
 }
 
 @riverpod

@@ -35,13 +35,39 @@ class LocalChatRepository {
     });
   }
 
-  Future<void> deleteChat(String id) async {
+  Future<ChatModel?> getChat(String id) async {
+    final db = await _dbService.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'chats',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (maps.isNotEmpty) {
+      return ChatModel.fromMap(maps.first);
+    }
+    return null;
+  }
+
+  Future<void> updateChat(ChatModel chat) async {
+    final db = await _dbService.database;
+    await db.update(
+      'chats',
+      chat.toMap(),
+      where: 'id = ?',
+      whereArgs: [chat.id],
+    );
+  }
+
+  Future<void> deleteChat(String chatId) async {
     final db = await _dbService.database;
     await db.delete(
       'chats',
       where: 'id = ?',
-      whereArgs: [id],
+      whereArgs: [chatId],
     );
+    // Messages will be deleted automatically due to ON DELETE CASCADE
   }
 
   // === MESSAGE OPERATIONS ===
@@ -52,6 +78,27 @@ class LocalChatRepository {
       'messages',
       message.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<MessageModel?> getMessage(String id) async {
+    final db = await _dbService.database;
+    final maps = await db.query(
+      'messages',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return MessageModel.fromMap(maps.first);
+  }
+
+  Future<void> deleteMessage(String id) async {
+    final db = await _dbService.database;
+    await db.delete(
+      'messages',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

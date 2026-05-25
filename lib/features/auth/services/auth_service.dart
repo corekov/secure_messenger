@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/storage/secure_storage_service.dart';
 
+import 'dart:math';
+
 part 'auth_service.g.dart';
 
 class AuthService {
@@ -11,14 +13,23 @@ class AuthService {
 
   const AuthService(this._dio, this._storage);
 
+  Future<String> _getOrCreateDeviceFp() async {
+    var fp = await _storage.getDeviceFingerprint();
+    if (fp == null) {
+      final random = Random();
+      fp = 'device-${DateTime.now().millisecondsSinceEpoch}-${random.nextInt(100000)}';
+      await _storage.saveDeviceFingerprint(fp);
+    }
+    return fp;
+  }
+
   Future<void> register(String username, String password) async {
-    // Generate a simple device fingerprint (in a real app, use device_info_plus)
-    final deviceFp = 'android-emulator-fp';
+    final deviceFp = await _getOrCreateDeviceFp();
     
     final response = await _dio.post('/auth/register', data: {
       'username': username,
       'password': password,
-      'device_name': 'Android Emulator',
+      'device_name': 'Flutter App',
       'device_fp': deviceFp,
       'platform': 'android',
     });
@@ -27,7 +38,7 @@ class AuthService {
   }
 
   Future<void> login(String username, String password) async {
-    final deviceFp = 'android-emulator-fp';
+    final deviceFp = await _getOrCreateDeviceFp();
 
     final response = await _dio.post('/auth/login', data: {
       'username': username,

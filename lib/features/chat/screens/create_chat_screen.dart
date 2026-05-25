@@ -60,7 +60,7 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: const Color(0xFF121212),
         elevation: 0,
       ),
       body: Column(
@@ -68,43 +68,71 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
               onChanged: _searchUsers,
               decoration: InputDecoration(
                 hintText: 'Search username...',
                 hintStyle: const TextStyle(color: Colors.white54),
                 filled: true,
                 fillColor: const Color(0xFF1E1E1E),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ),
           if (_isLoading)
-            const Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator(color: Colors.blueAccent))
+            const Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: Colors.blueAccent))
           else if (_searchResults.isEmpty)
-            const Expanded(
+            Expanded(
               child: Center(
-                child: Text('Search for a username to start chatting', style: TextStyle(color: Colors.white54)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.person_search_rounded, size: 80, color: Colors.white.withAlpha(20)),
+                    const SizedBox(height: 16),
+                    const Text('Find people securely', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    const Text('Type a username above to start\na new end-to-end encrypted chat.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 15)),
+                  ],
+                ),
               ),
             )
           else
             Expanded(
               child: ListView.separated(
+                padding: const EdgeInsets.only(bottom: 24),
                 itemCount: _searchResults.length,
-                separatorBuilder: (context, index) => const Divider(color: Colors.white10, height: 1, indent: 76),
+                separatorBuilder: (context, index) => const Divider(color: Colors.white10, height: 1, indent: 72),
                 itemBuilder: (context, index) {
                   final user = _searchResults[index];
                   final username = user['username'] ?? 'Unknown';
                   return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blueAccent,
-                      child: Text(username[0].toUpperCase(), style: const TextStyle(color: Colors.white)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Colors.blueAccent, Colors.purpleAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          username[0].toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                    title: Text(username, style: const TextStyle(color: Colors.white)),
+                    title: Text(username, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    subtitle: const Text('Tap to start secure chat', style: TextStyle(color: Colors.blueAccent, fontSize: 13)),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.white38),
                     onTap: () => _createChat(user['id']),
                   );
                 },

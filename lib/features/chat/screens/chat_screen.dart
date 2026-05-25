@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/messages_provider.dart';
+import '../providers/chat_list_provider.dart';
+import '../services/chat_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -19,12 +21,40 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _textController = TextEditingController();
 
-  void _sendMessage() {
+  @override
+  void initState() {
+    super.initState();
+    _markAsRead();
+  }
+
+  Future<void> _markAsRead() async {
+    try {
+      final chatService = ref.read(chatServiceProvider);
+      await chatService.markRead(widget.chatId);
+      ref.read(chatListProvider.notifier).syncChats();
+    } catch (e) {
+      // Ignore errors if marking read fails
+    }
+  }
+
+  Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
     
-    ref.read(messagesProvider(widget.chatId).notifier).sendMessage(text);
     _textController.clear();
+    
+    try {
+      await ref.read(messagesProvider(widget.chatId).notifier).sendMessage(text);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -34,9 +64,33 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Colors.blueAccent, Colors.purpleAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  widget.chatName.isNotEmpty ? widget.chatName[0].toUpperCase() : '?',
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
         backgroundColor: const Color(0xFF1E1E1E),
         elevation: 1,
+        titleSpacing: 0,
       ),
       body: Column(
         children: [
@@ -44,33 +98,63 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             child: messagesState.when(
               data: (messages) {
                 if (messages.isEmpty) {
-                  return const Center(
-                    child: Text('No messages yet. Send a secure payload.', style: TextStyle(color: Colors.white54)),
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.lock_outline, size: 64, color: Colors.white24),
+                        const SizedBox(height: 16),
+                        Text(
+                          'End-to-End Encrypted',
+                          style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'No one outside of this chat, not even\nthe server, can read your messages.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 return ListView.builder(
-                  reverse: true, // Start from the bottom
-                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  reverse: true,
+                  padding: const EdgeInsets.only(top: 16, bottom: 16),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index];
-                    final isMe = msg.senderId == 'me'; // We will use 'me' as sender id for now
+                    final isMe = msg.senderId == 'me';
                     
                     return Align(
                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                         decoration: BoxDecoration(
-                          color: isMe ? Colors.blueAccent : const Color(0xFF2C2C2C),
-                          borderRadius: BorderRadius.circular(18).copyWith(
-                            bottomRight: isMe ? const Radius.circular(0) : null,
-                            bottomLeft: !isMe ? const Radius.circular(0) : null,
+                          gradient: isMe 
+                            ? const LinearGradient(
+                                colors: [Color(0xFF2879FE), Color(0xFF1E5BBF)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
+                          color: isMe ? null : const Color(0xFF2C2C2C),
+                          borderRadius: BorderRadius.circular(20).copyWith(
+                            bottomRight: isMe ? const Radius.circular(4) : null,
+                            bottomLeft: !isMe ? const Radius.circular(4) : null,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(20),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
                           msg.content,
-                          style: const TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.3),
                         ),
                       ),
                     );
@@ -82,17 +166,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(8.0),
-            color: const Color(0xFF1E1E1E),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E),
+              border: Border(top: BorderSide(color: Colors.white.withAlpha(10), width: 1)),
+            ),
             child: SafeArea(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline, color: Colors.white54, size: 28),
+                    onPressed: () {}, // Attachment placeholder
+                  ),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: TextField(
                       controller: _textController,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      minLines: 1,
+                      maxLines: 5,
+                      textInputAction: TextInputAction.send,
                       decoration: InputDecoration(
-                        hintText: 'Encrypted message',
+                        hintText: 'Secure message...',
                         hintStyle: const TextStyle(color: Colors.white54),
                         filled: true,
                         fillColor: const Color(0xFF2C2C2C),
@@ -106,11 +202,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor: Colors.blueAccent,
-                    radius: 24,
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 2),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Colors.blueAccent, Colors.purpleAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
                     child: IconButton(
-                      icon: const Icon(Icons.send, color: Colors.white),
+                      icon: const Icon(Icons.send_rounded, color: Colors.white),
                       onPressed: _sendMessage,
                     ),
                   ),
