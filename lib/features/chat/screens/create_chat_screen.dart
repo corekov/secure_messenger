@@ -48,7 +48,7 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create chat', style: TextStyle(color: Colors.white)), backgroundColor: Colors.redAccent),
+          const SnackBar(content: Text('Failed to create chat'), backgroundColor: Colors.redAccent),
         );
       }
     }
@@ -56,11 +56,12 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
-        backgroundColor: const Color(0xFF121212),
         elevation: 0,
       ),
       body: Column(
@@ -68,13 +69,13 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 16),
               onChanged: _searchUsers,
               decoration: InputDecoration(
                 hintText: 'Search username...',
-                hintStyle: const TextStyle(color: Colors.white54),
+                hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
                 filled: true,
-                fillColor: const Color(0xFF1E1E1E),
+                fillColor: theme.cardColor,
                 prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -92,11 +93,11 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.person_search_rounded, size: 80, color: Colors.white.withAlpha(20)),
+                    Icon(Icons.person_search_rounded, size: 80, color: theme.iconTheme.color?.withAlpha(50)),
                     const SizedBox(height: 16),
-                    const Text('Find people securely', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    const Text('Find people securely', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    const Text('Type a username above to start\na new end-to-end encrypted chat.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54, fontSize: 15)),
+                    Text('Type a username above to start\na new end-to-end encrypted chat.', textAlign: TextAlign.center, style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 15)),
                   ],
                 ),
               ),
@@ -106,7 +107,7 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
               child: ListView.separated(
                 padding: const EdgeInsets.only(bottom: 24),
                 itemCount: _searchResults.length,
-                separatorBuilder: (context, index) => const Divider(color: Colors.white10, height: 1, indent: 72),
+                separatorBuilder: (context, index) => Divider(color: theme.dividerColor.withAlpha(25), height: 1, indent: 72),
                 itemBuilder: (context, index) {
                   final user = _searchResults[index];
                   final username = user['username'] ?? 'Unknown';
@@ -130,9 +131,9 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
                         ),
                       ),
                     ),
-                    title: Text(username, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    title: Text(username, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     subtitle: const Text('Tap to start secure chat', style: TextStyle(color: Colors.blueAccent, fontSize: 13)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                    trailing: Icon(Icons.chevron_right, color: theme.iconTheme.color?.withAlpha(100)),
                     onTap: () => _createChat(user['id']),
                   );
                 },

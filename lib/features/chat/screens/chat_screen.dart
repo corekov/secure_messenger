@@ -60,9 +60,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messagesState = ref.watch(messagesProvider(widget.chatId));
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: Row(
           children: [
@@ -88,7 +89,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
-        backgroundColor: const Color(0xFF1E1E1E),
         elevation: 1,
         titleSpacing: 0,
       ),
@@ -102,17 +102,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.lock_outline, size: 64, color: Colors.white24),
+                        Icon(Icons.lock_outline, size: 64, color: theme.iconTheme.color?.withAlpha(50)),
                         const SizedBox(height: 16),
                         Text(
                           'End-to-End Encrypted',
-                          style: TextStyle(color: Colors.white.withAlpha(200), fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withAlpha(200), fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'No one outside of this chat, not even\nthe server, can read your messages.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                          style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 14),
                         ),
                       ],
                     ),
@@ -139,14 +139,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 end: Alignment.bottomRight,
                               )
                             : null,
-                          color: isMe ? null : const Color(0xFF2C2C2C),
+                          color: isMe ? null : (isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade200),
                           borderRadius: BorderRadius.circular(20).copyWith(
                             bottomRight: isMe ? const Radius.circular(4) : null,
                             bottomLeft: !isMe ? const Radius.circular(4) : null,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(20),
+                              color: Colors.black.withAlpha(isDark ? 20 : 10),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -154,7 +154,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         child: Text(
                           msg.content,
-                          style: const TextStyle(color: Colors.white, fontSize: 16, height: 1.3),
+                          style: TextStyle(color: isMe ? Colors.white : theme.textTheme.bodyLarge?.color, fontSize: 16, height: 1.3),
                         ),
                       ),
                     );
@@ -168,30 +168,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
-              border: Border(top: BorderSide(color: Colors.white.withAlpha(10), width: 1)),
+              color: theme.cardColor,
+              border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(25), width: 1)),
             ),
             child: SafeArea(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.add_circle_outline, color: Colors.white54, size: 28),
+                    icon: Icon(Icons.add_circle_outline, color: theme.iconTheme.color?.withAlpha(150), size: 28),
                     onPressed: () {}, // Attachment placeholder
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: TextField(
                       controller: _textController,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 16),
                       minLines: 1,
                       maxLines: 5,
                       textInputAction: TextInputAction.send,
                       decoration: InputDecoration(
                         hintText: 'Secure message...',
-                        hintStyle: const TextStyle(color: Colors.white54),
+                        hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
                         filled: true,
-                        fillColor: const Color(0xFF2C2C2C),
+                        fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -226,3 +226,4 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 }
+

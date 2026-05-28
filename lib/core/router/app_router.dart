@@ -9,6 +9,7 @@ import '../../features/chat/screens/chat_list_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
 import '../../features/chat/screens/create_chat_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
 import 'main_shell_screen.dart';
 
 part 'app_router.g.dart';
@@ -16,6 +17,7 @@ part 'app_router.g.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _chatsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'chats');
 final _profileNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
+final _settingsNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -90,6 +92,15 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: '/profile',
                 builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _settingsNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
               ),
             ],
           ),

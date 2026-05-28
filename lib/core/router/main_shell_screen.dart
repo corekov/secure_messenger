@@ -8,41 +8,52 @@ class MainShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      extendBody: true, // Needed for floating nav bar to sit above content properly
       body: navigationShell,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(color: Colors.white.withAlpha(20), width: 1),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(isDark ? 50 : 10),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ),
-        child: NavigationBar(
-          height: 70,
-          backgroundColor: const Color(0xFF121212),
-          surfaceTintColor: Colors.transparent,
-          indicatorColor: Colors.blueAccent.withAlpha(40),
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (int index) {
-            navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
-            );
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.chat_bubble_outline, color: Colors.white70),
-              selectedIcon: Icon(Icons.chat_bubble, color: Colors.blueAccent),
-              label: 'Chats',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BottomNavigationBar(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              selectedItemColor: Colors.blueAccent,
+              unselectedItemColor: isDark ? Colors.white70 : Colors.black54,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: navigationShell.currentIndex,
+              onTap: (int index) {
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+              },
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), activeIcon: Icon(Icons.chat_bubble), label: 'Chats'),
+                BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+                BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'Settings'),
+              ],
             ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline, color: Colors.white70),
-              selectedIcon: Icon(Icons.person, color: Colors.blueAccent),
-              label: 'Profile',
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
+

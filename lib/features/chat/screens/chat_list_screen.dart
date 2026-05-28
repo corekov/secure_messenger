@@ -20,20 +20,18 @@ class ChatListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatState = ref.watch(chatListProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        title: const Text('Chats', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 28, letterSpacing: 0.5)),
-        backgroundColor: const Color(0xFF121212),
-        elevation: 0,
+        title: const Text('Chats'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.white70),
+            icon: Icon(Icons.search, color: theme.iconTheme.color),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.white70),
+            icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
             onPressed: () {},
           ),
         ],
@@ -56,13 +54,13 @@ class ChatListScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   const Text(
                     'No secure chats yet',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Tap the button below to start an\nend-to-end encrypted conversation.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white54, fontSize: 16, height: 1.5),
+                    style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(140), fontSize: 16, height: 1.5),
                   ),
                 ],
               ),
@@ -71,7 +69,7 @@ class ChatListScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.only(top: 8, bottom: 100),
             itemCount: chats.length,
-            separatorBuilder: (context, index) => const Divider(color: Colors.white10, height: 1, indent: 88),
+            separatorBuilder: (context, index) => Divider(color: theme.dividerColor.withAlpha(25), height: 1, indent: 88),
             itemBuilder: (context, index) {
               final chat = chats[index];
               return Slidable(
@@ -84,13 +82,13 @@ class ChatListScreen extends ConsumerWidget {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            backgroundColor: const Color(0xFF1E1E1E),
-                            title: const Text('Delete Chat', style: TextStyle(color: Colors.white)),
-                            content: const Text('Are you sure you want to delete this chat?', style: TextStyle(color: Colors.white70)),
+                            backgroundColor: theme.cardColor,
+                            title: const Text('Delete Chat'),
+                            content: const Text('Are you sure you want to delete this chat?'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(false),
-                                child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+                                child: Text('Cancel', style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150))),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(true),
@@ -141,13 +139,13 @@ class ChatListScreen extends ConsumerWidget {
                   ),
                   title: Text(
                     chat.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       chat.lastMessage,
-                      style: const TextStyle(color: Colors.white54, fontSize: 14),
+                      style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(140), fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -158,7 +156,7 @@ class ChatListScreen extends ConsumerWidget {
                     children: [
                       Text(
                         _formatTime(chat.lastMessageTime),
-                        style: const TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(100), fontSize: 12, fontWeight: FontWeight.w500),
                       ),
                       const SizedBox(height: 8),
                       if (chat.unreadCount > 0)
@@ -190,14 +188,17 @@ class ChatListScreen extends ConsumerWidget {
           child: Text('Error: $error', style: const TextStyle(color: Colors.redAccent)),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/create-chat');
-        },
-        backgroundColor: Colors.blueAccent,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.edit, color: Colors.white),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            context.push('/create-chat');
+          },
+          backgroundColor: Colors.blueAccent,
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: const Icon(Icons.edit, color: Colors.white),
+        ),
       ),
     );
   }
