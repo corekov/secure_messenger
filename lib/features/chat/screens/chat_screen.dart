@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/messages_provider.dart';
 import '../providers/chat_list_provider.dart';
 import '../services/chat_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -60,33 +61,85 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final messagesState = ref.watch(messagesProvider(widget.chatId));
+    final chatList = ref.watch(chatListProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     
+    // Find current chat to get online status
+    final chat = chatList.value?.where((c) => c.id == widget.chatId).firstOrNull;
+    final isOnline = chat?.isOnline ?? false;
+    
+    String statusText = l10n.offline;
+    if (isOnline) {
+      statusText = l10n.online;
+    } else if (chat?.lastSeen != null) {
+      final lastSeen = chat!.lastSeen!;
+      final now = DateTime.now();
+      if (lastSeen.year == now.year && lastSeen.month == now.month && lastSeen.day == now.day) {
+        statusText = l10n.lastSeenAt('${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}');
+      } else {
+        statusText = l10n.lastSeen('${lastSeen.day}/${lastSeen.month}/${lastSeen.year}');
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Colors.blueAccent, Colors.purpleAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            Stack(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Colors.blueAccent, Colors.purpleAccent],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      widget.chatName.isNotEmpty ? widget.chatName[0].toUpperCase() : '?',
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  widget.chatName.isNotEmpty ? widget.chatName[0].toUpperCase() : '?',
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
+                if (isOnline)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent[400],
+                        shape: BoxShape.circle,
+                        border: Border.all(color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 12),
-            Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                if (chat != null)
+                  Text(
+                    statusText,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: isOnline ? Colors.greenAccent[400] : theme.textTheme.bodyMedium?.color?.withAlpha(150),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
         elevation: 1,
@@ -105,12 +158,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         Icon(Icons.lock_outline, size: 64, color: theme.iconTheme.color?.withAlpha(50)),
                         const SizedBox(height: 16),
                         Text(
-                          'End-to-End Encrypted',
+                          l10n.endToEndEncrypted,
                           style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withAlpha(200), fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'No one outside of this chat, not even\nthe server, can read your messages.',
+                          l10n.noOneOutside,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 14),
                         ),
@@ -153,7 +206,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ],
                         ),
                         child: Text(
-                          msg.content,
+                          (msg.content == 'Secure message' || msg.content == 'Decryption failed' || msg.content == 'Decryption error' || msg.content == 'Ошибка расшифровки') ? l10n.secureMessageFallback : msg.content,
                           style: TextStyle(color: isMe ? Colors.white : theme.textTheme.bodyLarge?.color, fontSize: 16, height: 1.3),
                         ),
                       ),
@@ -188,7 +241,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       maxLines: 5,
                       textInputAction: TextInputAction.send,
                       decoration: InputDecoration(
-                        hintText: 'Secure message...',
+                        hintText: l10n.secureMessage,
                         hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
                         filled: true,
                         fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,

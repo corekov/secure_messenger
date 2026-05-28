@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../providers/auth_provider.dart';
 
@@ -25,6 +26,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -44,9 +46,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 children: [
                   const Icon(Icons.person_add_alt_1, size: 80, color: Colors.blueAccent),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Create Account',
-                    style: TextStyle(
+                  Text(
+                    l10n.createAccount,
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -55,9 +57,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Join the secure messenger',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  Text(
+                    l10n.joinSecure,
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
@@ -75,7 +77,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           controller: _usernameController,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            labelText: 'Username',
+                            labelText: l10n.username,
                             labelStyle: const TextStyle(color: Colors.white70),
                             prefixIcon: const Icon(Icons.person_outline, color: Colors.white70),
                             filled: true,
@@ -92,7 +94,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           obscureText: true,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: l10n.password,
                             labelStyle: const TextStyle(color: Colors.white70),
                             prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
                             filled: true,
@@ -137,9 +139,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               }
                             }
                           },
-                          child: const Text(
-                            'Sign Up',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                          child: Text(
+                            l10n.signUp,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                           ),
                         ),
                       ],
@@ -148,9 +150,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   const SizedBox(height: 24),
                   TextButton(
                     onPressed: () => context.go('/login'),
-                    child: const Text(
-                      'Already have an account? Login',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    child: Text(
+                      l10n.alreadyHaveAccount,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ),
                 ],

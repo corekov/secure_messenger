@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../providers/auth_provider.dart';
 
@@ -25,6 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -44,9 +46,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   const Icon(Icons.lock_outline, size: 80, color: Colors.blueAccent),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Welcome Back',
-                    style: TextStyle(
+                  Text(
+                    l10n.welcomeBack,
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -55,9 +57,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Sign in to continue securely',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  Text(
+                    l10n.signInSubtitle,
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
@@ -76,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           controller: _usernameController,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            labelText: 'Username',
+                            labelText: l10n.username,
                             labelStyle: const TextStyle(color: Colors.white70),
                             prefixIcon: const Icon(Icons.person_outline, color: Colors.white70),
                             filled: true,
@@ -94,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           obscureText: true,
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: l10n.password,
                             labelStyle: const TextStyle(color: Colors.white70),
                             prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
                             filled: true,
@@ -140,9 +142,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               }
                             }
                           },
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                          child: Text(
+                            l10n.login,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                           ),
                         ),
                       ],
@@ -152,9 +154,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   TextButton(
                     key: const ValueKey('register_link'),
                     onPressed: () => context.go('/register'),
-                    child: const Text(
-                      'Don\'t have an account? Sign Up',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    child: Text(
+                      l10n.noAccount,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ),
                 ],

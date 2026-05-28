@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -33,6 +33,13 @@ class DatabaseService {
       // Purge all corrupted cache data resulting from the JWT parsing bug
       await db.execute('DELETE FROM chats');
       await db.execute('DELETE FROM messages');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE chats ADD COLUMN is_online INTEGER NOT NULL DEFAULT 0');
+      await db.execute('ALTER TABLE chats ADD COLUMN last_seen INTEGER');
+    }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE chats ADD COLUMN peer_id TEXT');
     }
   }
 
@@ -50,7 +57,10 @@ class DatabaseService {
         last_message $textType,
         last_message_time $intType,
         unread_count $intType,
-        peer_public_key $textNullable
+        peer_public_key $textNullable,
+        is_online $intType DEFAULT 0,
+        last_seen INTEGER,
+        peer_id $textNullable
       )
     ''');
 

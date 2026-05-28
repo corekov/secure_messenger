@@ -86,7 +86,7 @@ class Messages extends _$Messages {
              }
            }
            
-           String decryptedContent = 'Decryption failed';
+           String decryptedContent = 'Secure message';
            String? peerPublicKey = await _resolvePublicKey(chatId, currentUserId);
            
            if (peerPublicKey != null) {
@@ -94,11 +94,11 @@ class Messages extends _$Messages {
                final encryptionService = ref.read(encryptionServiceProvider);
                decryptedContent = await encryptionService.decryptMessage(data['ciphertext'], peerPublicKey);
              } catch (e) {
-               decryptedContent = 'Decryption error';
+               decryptedContent = 'Secure message';
              }
            } else {
              // Fallback if no public key is found
-             decryptedContent = data['ciphertext'] ?? 'Encrypted message (missing key)';
+             decryptedContent = data['ciphertext'] ?? 'Secure message';
            }
 
            final currentMessages = state.value ?? [];
@@ -182,15 +182,15 @@ class Messages extends _$Messages {
         final existingMsg = await localRepo.getMessage(data['id']);
         if (existingMsg != null) continue;
 
-        String decryptedContent = 'Decryption failed';
+        String decryptedContent = 'Secure message';
         if (peerPublicKey != null) {
           try {
             decryptedContent = await encryptionService.decryptMessage(data['ciphertext'], peerPublicKey);
           } catch (e) {
-            decryptedContent = 'Decryption error';
+            decryptedContent = 'Secure message';
           }
         } else {
-           decryptedContent = data['ciphertext'] ?? 'Encrypted message (missing key)';
+           decryptedContent = data['ciphertext'] ?? 'Secure message';
         }
 
         final isMe = currentUserId != null && data['sender_id'] == currentUserId;

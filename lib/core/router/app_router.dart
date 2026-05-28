@@ -67,10 +67,28 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/loading',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const Scaffold(
-          backgroundColor: Colors.black,
-          body: Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
-        ),
+        builder: (context, state) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.lock_outline, 
+                    size: 80, 
+                    color: isDark ? Colors.blueAccent : Theme.of(context).primaryColor
+                  ),
+                  const SizedBox(height: 24),
+                  CircularProgressIndicator(
+                    color: isDark ? Colors.blueAccent : Theme.of(context).primaryColor
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

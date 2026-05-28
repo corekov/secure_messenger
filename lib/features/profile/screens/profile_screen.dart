@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
@@ -10,10 +11,11 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(profileProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(l10n.profile),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -62,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
               );
             },
             icon: const Icon(Icons.edit, color: Colors.white),
-            label: const Text('Edit Profile', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            label: Text(l10n.editProfile, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueAccent,
               foregroundColor: Colors.white,
@@ -78,7 +80,7 @@ class ProfileScreen extends ConsumerWidget {
               ref.read(authProvider.notifier).logout();
             },
             icon: const Icon(Icons.logout, color: Colors.redAccent),
-            label: const Text('Logout', style: TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
+            label: Text(l10n.logout, style: const TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: Colors.redAccent.withAlpha(100)),
               padding: const EdgeInsets.symmetric(vertical: 16),

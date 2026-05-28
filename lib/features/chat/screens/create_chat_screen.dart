@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../user/services/user_service.dart';
 import '../services/chat_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CreateChatScreen extends ConsumerStatefulWidget {
   const CreateChatScreen({super.key});
@@ -57,11 +58,11 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(l10n.newChat, style: const TextStyle(fontWeight: FontWeight.w600)),
         elevation: 0,
       ),
       body: Column(
@@ -72,7 +73,7 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
               style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 16),
               onChanged: _searchUsers,
               decoration: InputDecoration(
-                hintText: 'Search username...',
+                hintText: l10n.searchUsername,
                 hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
                 filled: true,
                 fillColor: theme.cardColor,
@@ -95,9 +96,9 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
                   children: [
                     Icon(Icons.person_search_rounded, size: 80, color: theme.iconTheme.color?.withAlpha(50)),
                     const SizedBox(height: 16),
-                    const Text('Find people securely', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(l10n.findPeople, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
-                    Text('Type a username above to start\na new end-to-end encrypted chat.', textAlign: TextAlign.center, style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 15)),
+                    Text(l10n.typeUsername, textAlign: TextAlign.center, style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 15)),
                   ],
                 ),
               ),
@@ -132,7 +133,7 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
                       ),
                     ),
                     title: Text(username, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Tap to start secure chat', style: TextStyle(color: Colors.blueAccent, fontSize: 13)),
+                    subtitle: Text(l10n.tapToStart, style: const TextStyle(color: Colors.blueAccent, fontSize: 13)),
                     trailing: Icon(Icons.chevron_right, color: theme.iconTheme.color?.withAlpha(100)),
                     onTap: () => _createChat(user['id']),
                   );

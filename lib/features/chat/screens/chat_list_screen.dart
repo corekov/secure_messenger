@@ -3,11 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_slidable/flutter_slidable.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../providers/chat_list_provider.dart';
 
-class ChatListScreen extends ConsumerWidget {
+class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
+
+  @override
+  ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends ConsumerState<ChatListScreen> {
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
@@ -18,27 +28,65 @@ class ChatListScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final chatState = ref.watch(chatListProvider);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 18),
+                decoration: InputDecoration(
+                  hintText: l10n.searchChats,
+                  hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
+                  border: InputBorder.none,
+                ),
+                onChanged: (val) {
+                  setState(() {
+                    _searchQuery = val.toLowerCase();
+                  });
+                },
+              )
+            : Text(l10n.chatsTitle),
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: theme.iconTheme.color),
-            onPressed: () {},
+            icon: Icon(_isSearching ? Icons.close : Icons.search, color: theme.iconTheme.color),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchQuery = '';
+                  _searchController.clear();
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
           ),
-          IconButton(
-            icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
-            onPressed: () {},
-          ),
+          if (!_isSearching)
+            IconButton(
+              icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
+              onPressed: () {},
+            ),
         ],
       ),
       body: chatState.when(
-        data: (chats) {
-          if (chats.isEmpty) {
+        data: (allChats) {
+          final chats = allChats.where((chat) {
+            return chat.name.toLowerCase().contains(_searchQuery);
+          }).toList();
+
+          if (allChats.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -52,13 +100,13 @@ class ChatListScreen extends ConsumerWidget {
                     child: const Icon(Icons.chat_bubble_outline, size: 80, color: Colors.blueAccent),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'No secure chats yet',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.noSecureChats,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tap the button below to start an\nend-to-end encrypted conversation.',
+                    l10n.startChatSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(140), fontSize: 16, height: 1.5),
                   ),
@@ -66,6 +114,16 @@ class ChatListScreen extends ConsumerWidget {
               ),
             );
           }
+
+          if (chats.isEmpty) {
+            return Center(
+              child: Text(
+                l10n.noChatsFound,
+                style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 16),
+              ),
+            );
+          }
+
           return ListView.separated(
             padding: const EdgeInsets.only(top: 8, bottom: 100),
             itemCount: chats.length,
@@ -83,16 +141,16 @@ class ChatListScreen extends ConsumerWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor: theme.cardColor,
-                            title: const Text('Delete Chat'),
-                            content: const Text('Are you sure you want to delete this chat?'),
+                            title: Text(l10n.deleteChat),
+                            content: Text(l10n.deleteChatConfirm),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(false),
-                                child: Text('Cancel', style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150))),
+                                child: Text(l10n.cancel, style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150))),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(true),
-                                child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+                                child: Text(l10n.delete, style: const TextStyle(color: Colors.redAccent)),
                               ),
                             ],
                           ),
@@ -113,29 +171,47 @@ class ChatListScreen extends ConsumerWidget {
                       backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
                       icon: Icons.delete,
-                      label: 'Delete',
+                      label: l10n.delete,
                     ),
                   ],
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  leading: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Colors.blueAccent, Colors.purpleAccent],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  leading: Stack(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Colors.blueAccent, Colors.purpleAccent],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            chat.name.isNotEmpty ? chat.name[0].toUpperCase() : '?',
+                            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        chat.name.isNotEmpty ? chat.name[0].toUpperCase() : '?',
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                      if (chat.isOnline)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: Colors.greenAccent[400],
+                              shape: BoxShape.circle,
+                              border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   title: Text(
                     chat.name,
@@ -144,7 +220,7 @@ class ChatListScreen extends ConsumerWidget {
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
-                      chat.lastMessage,
+                      (chat.lastMessage == 'Secure message' || chat.lastMessage == 'Decryption failed' || chat.lastMessage == 'Decryption error' || chat.lastMessage == 'Ошибка расшифровки') ? l10n.secureMessageFallback : chat.lastMessage,
                       style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(140), fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -203,3 +279,4 @@ class ChatListScreen extends ConsumerWidget {
     );
   }
 }
+
