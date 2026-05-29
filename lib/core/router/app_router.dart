@@ -68,7 +68,6 @@ GoRouter appRouter(Ref ref) {
         path: '/loading',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
             backgroundColor: const Color(0xFF0A1931),
             body: Center(

@@ -11,15 +11,16 @@ class MainShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
-      extendBody: true, // Needed for floating nav bar to sit above content properly
+      extendBody:
+          true, // Needed for floating nav bar to sit above content properly
       body: navigationShell,
       bottomNavigationBar: SafeArea(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+            color: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -34,8 +35,6 @@ class MainShellScreen extends StatelessWidget {
             child: BottomNavigationBar(
               elevation: 0,
               backgroundColor: Colors.transparent,
-              selectedItemColor: Colors.blueAccent,
-              unselectedItemColor: isDark ? Colors.white70 : Colors.black54,
               showSelectedLabels: true,
               showUnselectedLabels: true,
               type: BottomNavigationBarType.fixed,
@@ -47,9 +46,21 @@ class MainShellScreen extends StatelessWidget {
                 );
               },
               items: [
-                BottomNavigationBarItem(icon: const Icon(Icons.chat_bubble_outline), activeIcon: const Icon(Icons.chat_bubble), label: l10n.chatsTitle),
-                BottomNavigationBarItem(icon: const Icon(Icons.person_outline), activeIcon: const Icon(Icons.person), label: l10n.profile),
-                BottomNavigationBarItem(icon: const Icon(Icons.settings_outlined), activeIcon: const Icon(Icons.settings), label: l10n.settings),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  activeIcon: const Icon(Icons.chat_bubble),
+                  label: l10n.chatsTitle,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.person_outline),
+                  activeIcon: const Icon(Icons.person),
+                  label: l10n.profile,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.settings_outlined),
+                  activeIcon: const Icon(Icons.settings),
+                  label: l10n.settings,
+                ),
               ],
             ),
           ),
@@ -58,4 +69,3 @@ class MainShellScreen extends StatelessWidget {
     );
   }
 }
-
