@@ -233,8 +233,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       ),
                     ],
                   ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 8,
                     ),
@@ -351,10 +353,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       context.push('/chat/${chat.id}', extra: chat.name);
                     },
                   ),
-                );
-              },
-            );
-          },
+                ),
+              );
+            },
+          );
+        },
           loading: () => const Center(
             child: CircularProgressIndicator(color: Colors.blueAccent),
           ),

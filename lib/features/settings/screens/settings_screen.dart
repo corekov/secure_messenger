@@ -56,11 +56,12 @@ class SettingsScreen extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+    return Material(
+      color: Theme.of(context).cardColor,
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -82,11 +83,12 @@ class SettingsScreen extends ConsumerWidget {
 
   Widget _buildThemeTile(BuildContext context, WidgetRef ref, ThemeMode currentMode, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+    return Material(
+      color: Theme.of(context).cardColor,
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -121,11 +123,12 @@ class SettingsScreen extends ConsumerWidget {
 
   Widget _buildLanguageTile(BuildContext context, WidgetRef ref, Locale currentLocale, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+    return Material(
+      color: Theme.of(context).cardColor,
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
