@@ -70,19 +70,19 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor: const Color(0xFF0A1931),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.lock_outline, 
-                    size: 80, 
-                    color: isDark ? Colors.blueAccent : Theme.of(context).primaryColor
+                  Image.asset(
+                    'assets/app_logo.png',
+                    width: 80,
+                    height: 80,
                   ),
                   const SizedBox(height: 24),
-                  CircularProgressIndicator(
-                    color: isDark ? Colors.blueAccent : Theme.of(context).primaryColor
+                  const CircularProgressIndicator(
+                    color: Colors.white,
                   ),
                 ],
               ),

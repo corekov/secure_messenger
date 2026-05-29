@@ -42,17 +42,23 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - assets/
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+  image_path: "assets/app_logo.png"
   adaptive_icon_background: "#121212"
-  adaptive_icon_foreground: "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+  adaptive_icon_foreground: "assets/app_logo.png"
 
 flutter_native_splash:
-  color: "#FFFFFF"
-  color_dark: "#121212"
+  color: "#0A1931"
+  image: "assets/app_logo_splash.png"
+  color_dark: "#0A1931"
+  image_dark: "assets/app_logo_splash.png"
   android_12:
-    color: "#FFFFFF"
-    color_dark: "#121212"
+    color: "#0A1931"
+    image: "assets/app_logo_splash.png"
+    color_dark: "#0A1931"
+    image_dark: "assets/app_logo_splash.png"
