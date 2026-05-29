@@ -42,8 +42,12 @@ class MainShellScreen extends StatelessWidget {
                   child: BottomNavigationBar(
                     elevation: 0,
                     backgroundColor: Colors.transparent,
-                showSelectedLabels: true,
-                showUnselectedLabels: true,
+                    selectedItemColor: isDark ? Colors.blueAccent : Theme.of(context).primaryColor,
+                    unselectedItemColor: isDark ? Colors.white : Colors.black87,
+                    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    showSelectedLabels: true,
+                    showUnselectedLabels: true,
                 type: BottomNavigationBarType.fixed,
                 currentIndex: navigationShell.currentIndex,
                 onTap: (int index) {
