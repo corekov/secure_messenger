@@ -164,4 +164,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dark => 'Dark';
+
+  @override
+  String get photoVideo => 'Photo/Video';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get document => 'Document';
+
+  @override
+  String get fileTooLargeCompressing => 'File too large, compressing...';
+
+  @override
+  String get photoTapToDownload => 'Photo (Tap to download)';
+
+  @override
+  String get videoTapToDownload => 'Video (Tap to download)';
+
+  @override
+  String get videoTooLarge => 'Video too large. 50MB limit.';
 }

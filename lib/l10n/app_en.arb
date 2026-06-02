@@ -49,5 +49,12 @@
   "chooseTheme": "Choose your theme",
   "system": "System",
   "light": "Light",
-  "dark": "Dark"
+  "dark": "Dark",
+  "photoVideo": "Photo/Video",
+  "camera": "Camera",
+  "document": "Document",
+  "fileTooLargeCompressing": "File too large, compressing...",
+  "photoTapToDownload": "Photo (Tap to download)",
+  "videoTapToDownload": "Video (Tap to download)",
+  "videoTooLarge": "Video too large. 50MB limit."
 }

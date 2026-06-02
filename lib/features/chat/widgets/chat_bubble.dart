@@ -119,7 +119,7 @@ class ChatBubble extends ConsumerWidget {
         Icon(Icons.image, color: isMe ? Colors.white : theme.iconTheme.color, size: 48),
         const SizedBox(height: 8),
         Text(
-          'Photo (Tap to download)', // TODO: i18n
+          l10n.photoTapToDownload,
           style: TextStyle(color: isMe ? Colors.white : theme.textTheme.bodyMedium?.color),
         ),
       ],
@@ -133,7 +133,7 @@ class ChatBubble extends ConsumerWidget {
         Icon(Icons.videocam, color: isMe ? Colors.white : theme.iconTheme.color, size: 48),
         const SizedBox(height: 8),
         Text(
-          'Video (Tap to download)', // TODO: i18n
+          l10n.videoTapToDownload,
           style: TextStyle(color: isMe ? Colors.white : theme.textTheme.bodyMedium?.color),
         ),
       ],

@@ -164,4 +164,25 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get dark => 'Темная';
+
+  @override
+  String get photoVideo => 'Фото/Видео';
+
+  @override
+  String get camera => 'Камера';
+
+  @override
+  String get document => 'Документ';
+
+  @override
+  String get fileTooLargeCompressing => 'Файл слишком большой, сжимаем...';
+
+  @override
+  String get photoTapToDownload => 'Фото (Нажмите, чтобы скачать)';
+
+  @override
+  String get videoTapToDownload => 'Видео (Нажмите, чтобы скачать)';
+
+  @override
+  String get videoTooLarge => 'Видео слишком большое. Лимит 50 МБ.';
 }

@@ -397,6 +397,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get dark;
+
+  /// No description provided for @photoVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo/Video'**
+  String get photoVideo;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @document.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get document;
+
+  /// No description provided for @fileTooLargeCompressing.
+  ///
+  /// In en, this message translates to:
+  /// **'File too large, compressing...'**
+  String get fileTooLargeCompressing;
+
+  /// No description provided for @photoTapToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo (Tap to download)'**
+  String get photoTapToDownload;
+
+  /// No description provided for @videoTapToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Video (Tap to download)'**
+  String get videoTapToDownload;
+
+  /// No description provided for @videoTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Video too large. 50MB limit.'**
+  String get videoTooLarge;
 }
 
 class _AppLocalizationsDelegate

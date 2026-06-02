@@ -79,7 +79,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Photo/Video'), // TODO: i18n
+                title: Text(AppLocalizations.of(context)!.photoVideo),
                 onTap: () {
                   Navigator.pop(context);
                   _pickMedia(false);
@@ -87,7 +87,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'), // TODO: i18n
+                title: Text(AppLocalizations.of(context)!.camera),
                 onTap: () {
                   Navigator.pop(context);
                   _pickMedia(true);
@@ -95,7 +95,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.insert_drive_file),
-                title: const Text('Document'), // TODO: i18n
+                title: Text(AppLocalizations.of(context)!.document),
                 onTap: () {
                   Navigator.pop(context);
                   _pickDocument();
@@ -110,20 +110,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _pickMedia(bool fromCamera) async {
     final picker = ImagePicker();
-    final source = fromCamera ? ImageSource.camera : ImageSource.gallery;
+    XFile? mediaFile;
     
-    final XFile? image = await picker.pickImage(source: source);
-    if (image == null) return;
+    if (fromCamera) {
+      mediaFile = await picker.pickImage(source: ImageSource.camera);
+    } else {
+      mediaFile = await picker.pickMedia();
+    }
     
-    final file = File(image.path);
+    if (mediaFile == null) return;
+    
+    final file = File(mediaFile.path);
     int size = await file.length();
     
     String finalPath = file.path;
+    final isVideo = mediaFile.name.toLowerCase().endsWith('.mp4') || 
+                    mediaFile.name.toLowerCase().endsWith('.mov');
+    final messageType = isVideo ? 'video' : 'image';
     
-    if (size > 15 * 1024 * 1024) {
+    if (!isVideo && size > 15 * 1024 * 1024) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('File too large, compressing...')), // TODO: i18n
+          SnackBar(content: Text(AppLocalizations.of(context)!.fileTooLargeCompressing)),
         );
       }
       
@@ -137,20 +145,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         finalPath = compressedFile.path;
         size = await File(finalPath).length();
       }
+    } else if (isVideo && size > 50 * 1024 * 1024) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.videoTooLarge)),
+        );
+      }
+      return;
     }
     
     try {
       await ref.read(messagesProvider(widget.chatId).notifier).sendFileMessage(
         filePath: finalPath,
-        messageType: 'image',
-        fileName: image.name,
-        mimeType: 'image/jpeg',
+        messageType: messageType,
+        fileName: mediaFile.name,
+        mimeType: isVideo ? 'video/mp4' : 'image/jpeg',
         fileSize: size,
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send image: $e')),
+          SnackBar(content: Text('Failed to send file: $e')),
         );
       }
     }

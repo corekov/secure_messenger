@@ -49,5 +49,12 @@
   "chooseTheme": "Выберите тему",
   "system": "Системная",
   "light": "Светлая",
-  "dark": "Темная"
+  "dark": "Темная",
+  "photoVideo": "Фото/Видео",
+  "camera": "Камера",
+  "document": "Документ",
+  "fileTooLargeCompressing": "Файл слишком большой, сжимаем...",
+  "photoTapToDownload": "Фото (Нажмите, чтобы скачать)",
+  "videoTapToDownload": "Видео (Нажмите, чтобы скачать)",
+  "videoTooLarge": "Видео слишком большое. Лимит 50 МБ."
 }
