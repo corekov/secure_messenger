@@ -17,6 +17,8 @@ class AuthInterceptor extends QueuedInterceptor {
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final token = await _storage.getAccessToken();
     if (token != null) {
+      options.headers.remove('authorization');
+      options.headers.remove('Authorization');
       options.headers['Authorization'] = 'Bearer $token';
     }
     return handler.next(options);
@@ -25,13 +27,18 @@ class AuthInterceptor extends QueuedInterceptor {
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
-      final success = await _refreshToken();
-      if (success) {
+      final newToken = await _refreshToken();
+      if (newToken != null) {
         // Retry the original request
         try {
-          final token = await _storage.getAccessToken();
           final options = err.requestOptions;
-          options.headers['Authorization'] = 'Bearer $token';
+          options.headers.remove('authorization');
+          options.headers.remove('Authorization');
+          options.headers['Authorization'] = 'Bearer $newToken';
+
+          if (options.data is FormData) {
+            options.data = (options.data as FormData).clone();
+          }
 
           final response = await _dio.fetch(options);
           return handler.resolve(response);
@@ -47,10 +54,10 @@ class AuthInterceptor extends QueuedInterceptor {
     return handler.next(err);
   }
 
-  Future<bool> _refreshToken() async {
+  Future<String?> _refreshToken() async {
     try {
       final refreshToken = await _storage.getRefreshToken();
-      if (refreshToken == null) return false;
+      if (refreshToken == null) return null;
 
       // Use a separate Dio instance to avoid interceptor loops
       final refreshDio = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
@@ -66,12 +73,12 @@ class AuthInterceptor extends QueuedInterceptor {
         if (newAccessToken != null && newRefreshToken != null) {
           await _storage.saveAccessToken(newAccessToken);
           await _storage.saveRefreshToken(newRefreshToken);
-          return true;
+          return newAccessToken;
         }
       }
-      return false;
+      return null;
     } catch (_) {
-      return false;
+      return null;
     }
   }
 }

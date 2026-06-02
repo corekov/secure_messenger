@@ -5,6 +5,11 @@ class MessageModel {
   final String content;
   final DateTime timestamp;
   final bool isRead;
+  final String messageType;
+  final String? fileId;
+  final String? fileName;
+  final int? fileSize;
+  final String? localFilePath;
 
   const MessageModel({
     required this.id,
@@ -13,6 +18,11 @@ class MessageModel {
     required this.content,
     required this.timestamp,
     this.isRead = false,
+    this.messageType = 'text',
+    this.fileId,
+    this.fileName,
+    this.fileSize,
+    this.localFilePath,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +33,11 @@ class MessageModel {
       'content': content,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'is_read': isRead ? 1 : 0,
+      'message_type': messageType,
+      'file_id': fileId,
+      'file_name': fileName,
+      'file_size': fileSize,
+      'local_file_path': localFilePath,
     };
   }
 
@@ -34,6 +49,11 @@ class MessageModel {
       content: map['content'] as String,
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
       isRead: (map['is_read'] as int) == 1,
+      messageType: map['message_type'] as String? ?? 'text',
+      fileId: map['file_id'] as String?,
+      fileName: map['file_name'] as String?,
+      fileSize: map['file_size'] as int?,
+      localFilePath: map['local_file_path'] as String?,
     );
   }
 }

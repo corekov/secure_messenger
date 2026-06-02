@@ -5,6 +5,11 @@ class ChatMessagePayload {
   final String? receiverId;
   final String? content;
   final DateTime? timestamp;
+  final String? fileId;
+  final String? fileKey;
+  final String? fileName;
+  final String? fileMimeType;
+  final int? fileSize;
 
   const ChatMessagePayload({
     required this.type,
@@ -13,6 +18,11 @@ class ChatMessagePayload {
     this.receiverId,
     this.content,
     this.timestamp,
+    this.fileId,
+    this.fileKey,
+    this.fileName,
+    this.fileMimeType,
+    this.fileSize,
   });
 
   factory ChatMessagePayload.fromJson(Map<String, dynamic> json) {
@@ -25,6 +35,11 @@ class ChatMessagePayload {
       timestamp: json['timestamp'] != null 
           ? DateTime.parse(json['timestamp'] as String) 
           : null,
+      fileId: json['file_id'] as String?,
+      fileKey: json['file_key'] as String?,
+      fileName: json['file_name'] as String?,
+      fileMimeType: json['file_mime_type'] as String?,
+      fileSize: json['file_size'] as int?,
     );
   }
 
@@ -36,6 +51,11 @@ class ChatMessagePayload {
       if (receiverId != null) 'receiver_id': receiverId,
       if (content != null) 'content': content,
       if (timestamp != null) 'timestamp': timestamp!.toIso8601String(),
+      if (fileId != null) 'file_id': fileId,
+      if (fileKey != null) 'file_key': fileKey,
+      if (fileName != null) 'file_name': fileName,
+      if (fileMimeType != null) 'file_mime_type': fileMimeType,
+      if (fileSize != null) 'file_size': fileSize,
     };
   }
 }

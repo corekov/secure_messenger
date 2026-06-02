@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -40,6 +40,13 @@ class DatabaseService {
     }
     if (oldVersion < 5) {
       await db.execute('ALTER TABLE chats ADD COLUMN peer_id TEXT');
+    }
+    if (oldVersion < 6) {
+      await db.execute("ALTER TABLE messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'text'");
+      await db.execute('ALTER TABLE messages ADD COLUMN file_id TEXT');
+      await db.execute('ALTER TABLE messages ADD COLUMN file_name TEXT');
+      await db.execute('ALTER TABLE messages ADD COLUMN file_size INTEGER');
+      await db.execute('ALTER TABLE messages ADD COLUMN local_file_path TEXT');
     }
   }
 
@@ -72,6 +79,11 @@ class DatabaseService {
         content $textType,
         timestamp $intType,
         is_read $boolType,
+        message_type $textType DEFAULT 'text',
+        file_id $textNullable,
+        file_name $textNullable,
+        file_size INTEGER,
+        local_file_path $textNullable,
         FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
       )
     ''');

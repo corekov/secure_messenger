@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/messages_provider.dart';
 import '../providers/chat_list_provider.dart';
 import '../services/chat_service.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../../../l10n/app_localizations.dart';
+import '../widgets/chat_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -53,6 +58,122 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.redAccent,
           ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showAttachmentOptions() async {
+    final theme = Theme.of(context);
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo/Video'), // TODO: i18n
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickMedia(false);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'), // TODO: i18n
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickMedia(true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.insert_drive_file),
+                title: const Text('Document'), // TODO: i18n
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickDocument();
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  Future<void> _pickMedia(bool fromCamera) async {
+    final picker = ImagePicker();
+    final source = fromCamera ? ImageSource.camera : ImageSource.gallery;
+    
+    final XFile? image = await picker.pickImage(source: source);
+    if (image == null) return;
+    
+    final file = File(image.path);
+    int size = await file.length();
+    
+    String finalPath = file.path;
+    
+    if (size > 15 * 1024 * 1024) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('File too large, compressing...')), // TODO: i18n
+        );
+      }
+      
+      final compressedFile = await FlutterImageCompress.compressAndGetFile(
+        file.path, 
+        '${file.path}_compressed.jpg',
+        quality: 70,
+      );
+      
+      if (compressedFile != null) {
+        finalPath = compressedFile.path;
+        size = await File(finalPath).length();
+      }
+    }
+    
+    try {
+      await ref.read(messagesProvider(widget.chatId).notifier).sendFileMessage(
+        filePath: finalPath,
+        messageType: 'image',
+        fileName: image.name,
+        mimeType: 'image/jpeg',
+        fileSize: size,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send image: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickDocument() async {
+    final result = await FilePicker.pickFiles();
+    if (result == null || result.files.single.path == null) return;
+    
+    final file = result.files.single;
+    
+    try {
+      await ref.read(messagesProvider(widget.chatId).notifier).sendFileMessage(
+        filePath: file.path!,
+        messageType: 'file',
+        fileName: file.name,
+        mimeType: 'application/octet-stream',
+        fileSize: file.size,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send file: $e')),
         );
       }
     }
@@ -179,38 +300,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     final msg = messages[index];
                     final isMe = msg.senderId == 'me';
                     
-                    return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                        decoration: BoxDecoration(
-                          gradient: isMe 
-                            ? const LinearGradient(
-                                colors: [Color(0xFF2879FE), Color(0xFF1E5BBF)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : null,
-                          color: isMe ? null : (isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade200),
-                          borderRadius: BorderRadius.circular(20).copyWith(
-                            bottomRight: isMe ? const Radius.circular(4) : null,
-                            bottomLeft: !isMe ? const Radius.circular(4) : null,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(isDark ? 20 : 10),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          (msg.content == 'Secure message' || msg.content == 'Decryption failed' || msg.content == 'Decryption error' || msg.content == 'Ошибка расшифровки') ? l10n.secureMessageFallback : msg.content,
-                          style: TextStyle(color: isMe ? Colors.white : theme.textTheme.bodyLarge?.color, fontSize: 16, height: 1.3),
-                        ),
-                      ),
-                    );
+                    return ChatBubble(message: msg, isMe: isMe);
                   },
                 );
               },
@@ -230,7 +320,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 children: [
                   IconButton(
                     icon: Icon(Icons.add_circle_outline, color: theme.iconTheme.color?.withAlpha(150), size: 28),
-                    onPressed: () {}, // Attachment placeholder
+                    onPressed: _showAttachmentOptions,
                   ),
                   const SizedBox(width: 4),
                   Expanded(
