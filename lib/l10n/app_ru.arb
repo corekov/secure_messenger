@@ -56,5 +56,10 @@
   "fileTooLargeCompressing": "Файл слишком большой, сжимаем...",
   "photoTapToDownload": "Фото (Нажмите, чтобы скачать)",
   "videoTapToDownload": "Видео (Нажмите, чтобы скачать)",
-  "videoTooLarge": "Видео слишком большое. Лимит 50 МБ."
+  "videoTooLarge": "Видео слишком большое. Лимит 50 МБ.",
+  "save": "Сохранить",
+  "aboutMe": "Обо мне",
+  "noBioSet": "Информация не указана",
+  "tellUsAboutYourself": "Расскажите о себе...",
+  "savedToGallery": "Сохранено в галерею"
 }

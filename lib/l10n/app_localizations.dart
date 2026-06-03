@@ -439,6 +439,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Video too large. 50MB limit.'**
   String get videoTooLarge;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @aboutMe.
+  ///
+  /// In en, this message translates to:
+  /// **'About me'**
+  String get aboutMe;
+
+  /// No description provided for @noBioSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No bio set'**
+  String get noBioSet;
+
+  /// No description provided for @tellUsAboutYourself.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself...'**
+  String get tellUsAboutYourself;
+
+  /// No description provided for @savedToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Gallery'**
+  String get savedToGallery;
 }
 
 class _AppLocalizationsDelegate

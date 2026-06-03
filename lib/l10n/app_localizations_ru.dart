@@ -185,4 +185,19 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get videoTooLarge => 'Видео слишком большое. Лимит 50 МБ.';
+
+  @override
+  String get save => 'Сохранить';
+
+  @override
+  String get aboutMe => 'Обо мне';
+
+  @override
+  String get noBioSet => 'Информация не указана';
+
+  @override
+  String get tellUsAboutYourself => 'Расскажите о себе...';
+
+  @override
+  String get savedToGallery => 'Сохранено в галерею';
 }

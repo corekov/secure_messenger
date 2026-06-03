@@ -48,6 +48,8 @@ class ChatList extends _$ChatList {
                 isOnline: isOnline,
                 lastSeen: isOnline ? null : DateTime.now(),
                 peerId: chat.peerId,
+                avatarUrl: chat.avatarUrl,
+                bio: chat.bio,
               );
               localRepo.saveChat(updatedChat);
               return updatedChat;
@@ -104,6 +106,8 @@ class ChatList extends _$ChatList {
         bool isOnline = false;
         DateTime? lastSeen;
         String? peerId;
+        String? avatarUrl;
+        String? bio;
         
         // For direct chats, try to extract the member's username and public key
         if (chatData['type'] == 'direct' && chatData['members'] != null) {
@@ -115,6 +119,8 @@ class ChatList extends _$ChatList {
              name = peerMembers.first['username'] ?? 'User';
              peerPublicKey = peerMembers.first['identity_key'];
              peerId = peerMembers.first['id'];
+             avatarUrl = peerMembers.first['avatar_url'];
+             bio = peerMembers.first['bio'];
              isOnline = peerMembers.first['is_active'] ?? false;
              if (peerMembers.first['last_seen'] != null) {
                lastSeen = DateTime.tryParse(peerMembers.first['last_seen']);
@@ -123,6 +129,8 @@ class ChatList extends _$ChatList {
              name = members.first['username'] ?? 'User';
              peerPublicKey = members.first['identity_key'];
              peerId = members.first['id'];
+             avatarUrl = members.first['avatar_url'];
+             bio = members.first['bio'];
              isOnline = members.first['is_active'] ?? false;
              if (members.first['last_seen'] != null) {
                lastSeen = DateTime.tryParse(members.first['last_seen']);
@@ -176,6 +184,8 @@ class ChatList extends _$ChatList {
           isOnline: isOnline,
           lastSeen: lastSeen,
           peerId: peerId,
+          avatarUrl: avatarUrl,
+          bio: bio,
         );
         
         await localRepo.saveChat(chat);

@@ -9,6 +9,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../../../l10n/app_localizations.dart';
 import '../widgets/chat_bubble.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/widgets/authenticated_avatar.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -221,62 +223,56 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Stack(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Colors.blueAccent, Colors.purpleAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+        title: GestureDetector(
+          onTap: () {
+            if (chat != null) {
+              context.push('/peer-profile', extra: chat);
+            }
+          },
+          child: Row(
+            children: [
+              Stack(
+                children: [
+                  AuthenticatedAvatar(
+                    avatarUrl: chat?.avatarUrl,
+                    fallbackText: widget.chatName,
+                    radius: 20,
                   ),
-                  child: Center(
-                    child: Text(
-                      widget.chatName.isNotEmpty ? widget.chatName[0].toUpperCase() : '?',
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                if (isOnline)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: Colors.greenAccent[400],
-                        shape: BoxShape.circle,
-                        border: Border.all(color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface, width: 2),
+                  if (isOnline)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent[400],
+                          shape: BoxShape.circle,
+                          border: Border.all(color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface, width: 2),
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                if (chat != null)
-                  Text(
-                    statusText,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: isOnline ? Colors.greenAccent[400] : theme.textTheme.bodyMedium?.color?.withAlpha(150),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  if (chat != null)
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: isOnline ? Colors.greenAccent[400] : theme.textTheme.bodyMedium?.color?.withAlpha(150),
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
         elevation: 1,
         titleSpacing: 0,

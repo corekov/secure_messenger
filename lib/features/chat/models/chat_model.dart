@@ -8,6 +8,8 @@ class ChatModel {
   final bool isOnline;
   final DateTime? lastSeen;
   final String? peerId;
+  final String? avatarUrl;
+  final String? bio;
 
   const ChatModel({
     required this.id,
@@ -19,6 +21,8 @@ class ChatModel {
     this.isOnline = false,
     this.lastSeen,
     this.peerId,
+    this.avatarUrl,
+    this.bio,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +36,8 @@ class ChatModel {
       'is_online': isOnline ? 1 : 0,
       'last_seen': lastSeen?.millisecondsSinceEpoch,
       'peer_id': peerId,
+      'avatar_url': avatarUrl,
+      'bio': bio,
     };
   }
 
@@ -46,6 +52,8 @@ class ChatModel {
       isOnline: (map['is_online'] as int?) == 1,
       lastSeen: map['last_seen'] != null ? DateTime.fromMillisecondsSinceEpoch(map['last_seen'] as int) : null,
       peerId: map['peer_id'] as String?,
+      avatarUrl: map['avatar_url'] as String?,
+      bio: map['bio'] as String?,
     );
   }
 }

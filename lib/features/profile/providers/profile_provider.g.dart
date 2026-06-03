@@ -9,17 +9,11 @@ part of 'profile_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(profile)
+@ProviderFor(Profile)
 final profileProvider = ProfileProvider._();
 
 final class ProfileProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<UserProfile?>,
-          UserProfile?,
-          FutureOr<UserProfile?>
-        >
-    with $FutureModifier<UserProfile?>, $FutureProvider<UserProfile?> {
+    extends $AsyncNotifierProvider<Profile, UserProfile?> {
   ProfileProvider._()
     : super(
         from: null,
@@ -36,14 +30,25 @@ final class ProfileProvider
 
   @$internal
   @override
-  $FutureProviderElement<UserProfile?> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<UserProfile?> create(Ref ref) {
-    return profile(ref);
-  }
+  Profile create() => Profile();
 }
 
-String _$profileHash() => r'5071232ee6c1304aa6af56b5020031955c1feb92';
+String _$profileHash() => r'febdf3a1725dde6175f9b88a74dfbdec5d2c02fe';
+
+abstract class _$Profile extends $AsyncNotifier<UserProfile?> {
+  FutureOr<UserProfile?> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<UserProfile?>, UserProfile?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<UserProfile?>, UserProfile?>,
+              AsyncValue<UserProfile?>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

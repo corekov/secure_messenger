@@ -12,6 +12,9 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import 'main_shell_screen.dart';
 
+import '../../features/profile/screens/peer_profile_screen.dart';
+import '../../features/chat/models/chat_model.dart';
+
 part 'app_router.g.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -145,6 +148,14 @@ GoRouter appRouter(Ref ref) {
           final chatId = state.pathParameters['id']!;
           final chatName = state.extra as String? ?? 'Secure Chat';
           return ChatScreen(chatId: chatId, chatName: chatName);
+        },
+      ),
+      GoRoute(
+        path: '/peer-profile',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final chat = state.extra as ChatModel;
+          return PeerProfileScreen(chat: chat);
         },
       ),
     ],

@@ -27,6 +27,11 @@ class AuthInterceptor extends QueuedInterceptor {
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
+      final token = await _storage.getAccessToken();
+      if (token == null) {
+        return handler.next(err);
+      }
+
       final newToken = await _refreshToken();
       if (newToken != null) {
         // Retry the original request

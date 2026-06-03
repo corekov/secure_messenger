@@ -185,4 +185,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get videoTooLarge => 'Video too large. 50MB limit.';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get aboutMe => 'About me';
+
+  @override
+  String get noBioSet => 'No bio set';
+
+  @override
+  String get tellUsAboutYourself => 'Tell us about yourself...';
+
+  @override
+  String get savedToGallery => 'Saved to Gallery';
 }

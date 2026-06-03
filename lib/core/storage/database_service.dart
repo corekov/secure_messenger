@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -48,6 +48,14 @@ class DatabaseService {
       await db.execute('ALTER TABLE messages ADD COLUMN file_size INTEGER');
       await db.execute('ALTER TABLE messages ADD COLUMN local_file_path TEXT');
     }
+    if (oldVersion < 7) {
+      try {
+        await db.execute('ALTER TABLE chats ADD COLUMN avatar_url TEXT');
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE chats ADD COLUMN bio TEXT');
+      } catch (_) {}
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -67,7 +75,9 @@ class DatabaseService {
         peer_public_key $textNullable,
         is_online $intType DEFAULT 0,
         last_seen INTEGER,
-        peer_id $textNullable
+        peer_id $textNullable,
+        avatar_url $textNullable,
+        bio $textNullable
       )
     ''');
 

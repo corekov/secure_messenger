@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/utils/error_formatter.dart';
 
 import '../providers/auth_provider.dart';
 
@@ -127,7 +128,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               if (context.mounted) {
                                 String errorMessage = e.toString().replaceAll('Exception: ', '');
                                 if (e is DioException && e.response?.data != null) {
-                                  errorMessage = e.response!.data.toString();
+                                  errorMessage = ErrorFormatter.formatBackendError(e.response!.data);
                                 }
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(

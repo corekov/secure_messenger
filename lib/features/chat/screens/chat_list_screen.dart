@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../providers/chat_list_provider.dart';
+import '../../../core/widgets/authenticated_avatar.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
@@ -242,29 +244,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     ),
                     leading: Stack(
                       children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [Colors.blueAccent, Colors.purpleAccent],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              chat.name.isNotEmpty
-                                  ? chat.name[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                        AuthenticatedAvatar(
+                          avatarUrl: chat.avatarUrl,
+                          fallbackText: chat.name,
+                          radius: 28,
                         ),
                         if (chat.isOnline)
                           Positioned(
@@ -295,12 +278,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        (chat.lastMessage == 'Secure message' ||
-                                chat.lastMessage == 'Decryption failed' ||
-                                chat.lastMessage == 'Decryption error' ||
-                                chat.lastMessage == 'Ошибка расшифровки')
-                            ? l10n.secureMessageFallback
-                            : chat.lastMessage,
+                        _formatLastMessage(chat.lastMessage, l10n),
                         style: TextStyle(
                           color: theme.textTheme.bodyMedium?.color?.withAlpha(
                             140,
@@ -390,5 +368,30 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         ),
       ),
     );
+  }
+  
+  String _formatLastMessage(String lastMessage, AppLocalizations l10n) {
+    if (lastMessage == 'Secure message' ||
+        lastMessage == 'Decryption failed' ||
+        lastMessage == 'Decryption error' ||
+        lastMessage == 'Ошибка расшифровки') {
+      return l10n.secureMessageFallback;
+    }
+    
+    if (lastMessage.startsWith('{') && lastMessage.contains('"type"')) {
+      try {
+        final payload = jsonDecode(lastMessage);
+        if (payload['type'] == 'image') {
+          return '📷 ${l10n.photoVideo}';
+        } else if (payload['type'] == 'video') {
+          return '📹 ${l10n.photoVideo}';
+        } else if (payload['type'] == 'file') {
+          return '📄 ${l10n.document}';
+        }
+      } catch (_) {
+        // Ignore JSON parse errors, fall back to string
+      }
+    }
+    return lastMessage;
   }
 }

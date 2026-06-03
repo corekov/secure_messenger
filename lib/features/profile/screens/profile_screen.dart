@@ -1,15 +1,75 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
+import '../../../core/storage/secure_storage_service.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  final _bioController = TextEditingController();
+  bool _isEditingBio = false;
+  bool _isUploadingAvatar = false;
+
+  @override
+  void dispose() {
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    setState(() => _isUploadingAvatar = true);
+    try {
+      await ref.read(profileProvider.notifier).uploadAvatar(File(image.path));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Avatar updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload avatar: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingAvatar = false);
+    }
+  }
+
+  Future<void> _saveBio() async {
+    try {
+      await ref.read(profileProvider.notifier).updateBio(_bioController.text.trim());
+      setState(() => _isEditingBio = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bio updated')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update bio: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profileAsync = ref.watch(profileProvider);
     final l10n = AppLocalizations.of(context)!;
 
@@ -17,77 +77,164 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.profile),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-        children: [
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Colors.blueAccent, Colors.purpleAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body: profileAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => const Center(child: Text('Failed to load profile')),
+        data: (profile) {
+          if (profile == null) return const SizedBox.shrink();
+
+          return ListView(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            children: [
+              Center(
+                child: GestureDetector(
+                  onTap: _pickAndUploadAvatar,
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Colors.blueAccent, Colors.purpleAccent],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 56,
+                          backgroundColor: Theme.of(context).cardColor,
+                          child: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                              ? FutureBuilder<String?>(
+                                  future: ref.read(secureStorageServiceProvider).getAccessToken(),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return const CircularProgressIndicator();
+                                    }
+                                    return ClipOval(
+                                      child: Image.network(
+                                        'http://10.0.2.2:8080${profile.avatarUrl}',
+                                        headers: {'Authorization': 'Bearer ${snapshot.data}'},
+                                        width: 112,
+                                        height: 112,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Icon(Icons.person, size: 60, color: Theme.of(context).iconTheme.color),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Icon(Icons.person, size: 60, color: Theme.of(context).iconTheme.color),
+                        ),
+                      ),
+                      if (_isUploadingAvatar)
+                        const Positioned.fill(
+                          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.blueAccent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-              child: CircleAvatar(
-                radius: 56,
-                backgroundColor: Theme.of(context).cardColor,
-                child: Icon(Icons.person, size: 60, color: Theme.of(context).iconTheme.color),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  profile.username,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Center(
-            child: profileAsync.when(
-              data: (profile) => Text(
-                profile?.username ?? 'Secure User',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              const Center(
+                child: Text(
+                  'Active',
+                  style: TextStyle(color: Colors.greenAccent, fontSize: 14),
+                ),
               ),
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => const Text('Failed to load', style: TextStyle(color: Colors.redAccent)),
-            ),
-          ),
-          const Center(
-            child: Text(
-              'Active',
-              style: TextStyle(color: Colors.greenAccent, fontSize: 14),
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () {
-              // Placeholder for editing profile
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Edit Profile coming soon!')),
-              );
-            },
-            icon: const Icon(Icons.edit, color: Colors.white),
-            label: Text(l10n.editProfile, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () {
-              // Trigger secure logout sequence
-              ref.read(authProvider.notifier).logout();
-            },
-            icon: const Icon(Icons.logout, color: Colors.redAccent),
-            label: Text(l10n.logout, style: const TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.redAccent.withAlpha(100)),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-          ),
-        ],
+              const SizedBox(height: 32),
+              
+              // Bio Section
+              Text(l10n.aboutMe, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              if (_isEditingBio) ...[
+                TextField(
+                  controller: _bioController,
+                  maxLength: 150,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: l10n.tellUsAboutYourself,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _isEditingBio = false);
+                      },
+                      child: Text(l10n.cancel),
+                    ),
+                    ElevatedButton(
+                      onPressed: _saveBio,
+                      child: Text(l10n.save),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          profile.bio?.isNotEmpty == true ? profile.bio! : l10n.noBioSet,
+                          style: TextStyle(
+                            color: profile.bio?.isNotEmpty == true 
+                                ? Theme.of(context).textTheme.bodyLarge?.color 
+                                : Colors.grey,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 20),
+                        onPressed: () {
+                          _bioController.text = profile.bio ?? '';
+                          setState(() => _isEditingBio = true);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              
+              const SizedBox(height: 32),
+              OutlinedButton.icon(
+                onPressed: () {
+                  ref.read(authProvider.notifier).logout();
+                },
+                icon: const Icon(Icons.logout, color: Colors.redAccent),
+                label: Text(l10n.logout, style: const TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.redAccent.withAlpha(100)),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

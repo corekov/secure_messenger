@@ -56,5 +56,10 @@
   "fileTooLargeCompressing": "File too large, compressing...",
   "photoTapToDownload": "Photo (Tap to download)",
   "videoTapToDownload": "Video (Tap to download)",
-  "videoTooLarge": "Video too large. 50MB limit."
+  "videoTooLarge": "Video too large. 50MB limit.",
+  "save": "Save",
+  "aboutMe": "About me",
+  "noBioSet": "No bio set",
+  "tellUsAboutYourself": "Tell us about yourself...",
+  "savedToGallery": "Saved to Gallery"
 }
