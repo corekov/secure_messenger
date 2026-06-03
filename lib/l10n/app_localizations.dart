@@ -469,6 +469,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved to Gallery'**
   String get savedToGallery;
+
+  /// No description provided for @storageAndData.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage & Data'**
+  String get storageAndData;
+
+  /// No description provided for @autoClearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-clear cache after period'**
+  String get autoClearCache;
+
+  /// No description provided for @never.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get never;
+
+  /// No description provided for @oneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Day'**
+  String get oneDay;
+
+  /// No description provided for @oneWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Week'**
+  String get oneWeek;
+
+  /// No description provided for @oneMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Month'**
+  String get oneMonth;
+
+  /// No description provided for @activeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeStatus;
+
+  /// No description provided for @avatarUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar updated successfully'**
+  String get avatarUpdated;
+
+  /// No description provided for @avatarUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload avatar: {error}'**
+  String avatarUpdateFailed(Object error);
+
+  /// No description provided for @bioUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio updated'**
+  String get bioUpdated;
+
+  /// No description provided for @bioUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update bio: {error}'**
+  String bioUpdateFailed(Object error);
+
+  /// No description provided for @tapToRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to retry'**
+  String get tapToRetry;
 }
 
 class _AppLocalizationsDelegate

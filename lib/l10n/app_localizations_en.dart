@@ -200,4 +200,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedToGallery => 'Saved to Gallery';
+
+  @override
+  String get storageAndData => 'Storage & Data';
+
+  @override
+  String get autoClearCache => 'Auto-clear cache after period';
+
+  @override
+  String get never => 'Never';
+
+  @override
+  String get oneDay => '1 Day';
+
+  @override
+  String get oneWeek => '1 Week';
+
+  @override
+  String get oneMonth => '1 Month';
+
+  @override
+  String get activeStatus => 'Active';
+
+  @override
+  String get avatarUpdated => 'Avatar updated successfully';
+
+  @override
+  String avatarUpdateFailed(Object error) {
+    return 'Failed to upload avatar: $error';
+  }
+
+  @override
+  String get bioUpdated => 'Bio updated';
+
+  @override
+  String bioUpdateFailed(Object error) {
+    return 'Failed to update bio: $error';
+  }
+
+  @override
+  String get tapToRetry => 'Tap to retry';
 }

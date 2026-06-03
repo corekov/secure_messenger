@@ -61,5 +61,17 @@
   "aboutMe": "About me",
   "noBioSet": "No bio set",
   "tellUsAboutYourself": "Tell us about yourself...",
-  "savedToGallery": "Saved to Gallery"
+  "savedToGallery": "Saved to Gallery",
+  "storageAndData": "Storage & Data",
+  "autoClearCache": "Auto-clear cache after period",
+  "never": "Never",
+  "oneDay": "1 Day",
+  "oneWeek": "1 Week",
+  "oneMonth": "1 Month",
+  "activeStatus": "Active",
+  "avatarUpdated": "Avatar updated successfully",
+  "avatarUpdateFailed": "Failed to upload avatar: {error}",
+  "bioUpdated": "Bio updated",
+  "bioUpdateFailed": "Failed to update bio: {error}",
+  "tapToRetry": "Tap to retry"
 }

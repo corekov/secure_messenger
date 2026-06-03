@@ -168,10 +168,10 @@ class SettingsScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     String getLabel(int days) {
-      if (days == 0) return 'Never';
-      if (days == 1) return '1 Day';
-      if (days == 7) return '1 Week';
-      if (days == 30) return '1 Month';
+      if (days == 0) return l10n.never;
+      if (days == 1) return l10n.oneDay;
+      if (days == 7) return l10n.oneWeek;
+      if (days == 30) return l10n.oneMonth;
       return '$days Days';
     }
     
@@ -192,8 +192,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           child: const Icon(Icons.storage_outlined, color: Colors.orange, size: 24),
         ),
-        title: const Text('Storage & Data', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-        subtitle: const Text('Auto-clear cache after period', style: TextStyle(fontSize: 13)),
+        title: Text(l10n.storageAndData, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        subtitle: Text(l10n.autoClearCache, style: const TextStyle(fontSize: 13)),
         trailing: DropdownButton<int>(
           value: currentRetention,
           underline: const SizedBox(),

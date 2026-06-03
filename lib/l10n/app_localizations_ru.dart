@@ -200,4 +200,44 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get savedToGallery => 'Сохранено в галерею';
+
+  @override
+  String get storageAndData => 'Данные и память';
+
+  @override
+  String get autoClearCache => 'Автоочистка кэша через';
+
+  @override
+  String get never => 'Никогда';
+
+  @override
+  String get oneDay => '1 День';
+
+  @override
+  String get oneWeek => '1 Неделю';
+
+  @override
+  String get oneMonth => '1 Месяц';
+
+  @override
+  String get activeStatus => 'В сети';
+
+  @override
+  String get avatarUpdated => 'Аватар успешно обновлен';
+
+  @override
+  String avatarUpdateFailed(Object error) {
+    return 'Ошибка обновления аватара: $error';
+  }
+
+  @override
+  String get bioUpdated => 'Информация обновлена';
+
+  @override
+  String bioUpdateFailed(Object error) {
+    return 'Ошибка обновления информации: $error';
+  }
+
+  @override
+  String get tapToRetry => 'Нажмите, чтобы повторить';
 }

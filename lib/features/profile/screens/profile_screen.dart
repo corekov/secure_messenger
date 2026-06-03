@@ -35,14 +35,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       await ref.read(profileProvider.notifier).uploadAvatar(File(image.path));
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Avatar updated successfully')),
+          SnackBar(content: Text(l10n.avatarUpdated)),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload avatar: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(content: Text(l10n.avatarUpdateFailed(e.toString())), backgroundColor: Colors.redAccent),
         );
       }
     } finally {
@@ -55,14 +57,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await ref.read(profileProvider.notifier).updateBio(_bioController.text.trim());
       setState(() => _isEditingBio = false);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bio updated')),
+          SnackBar(content: Text(l10n.bioUpdated)),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update bio: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(content: Text(l10n.bioUpdateFailed(e.toString())), backgroundColor: Colors.redAccent),
         );
       }
     }
@@ -151,10 +155,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
               ),
-              const Center(
+              Center(
                 child: Text(
-                  'Active',
-                  style: TextStyle(color: Colors.greenAccent, fontSize: 14),
+                  l10n.activeStatus,
+                  style: const TextStyle(color: Colors.greenAccent, fontSize: 14),
                 ),
               ),
               const SizedBox(height: 32),

@@ -351,20 +351,16 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         scale: _showFab ? 1.0 : 0.0,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 80.0),
-          child: FloatingActionButton(
-            //mini: true,
-            onPressed: () {
-              context.push('/create-chat');
-            },
-            backgroundColor: Colors.blueAccent,
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(100),
-            ),
-            child: const Icon(Icons.maps_ugc, color: Colors.white, size: 30),
+        child: FloatingActionButton(
+          onPressed: () {
+            context.push('/create-chat');
+          },
+          backgroundColor: Colors.blueAccent,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100),
           ),
+          child: const Icon(Icons.maps_ugc, color: Colors.white, size: 30),
         ),
       ),
     );

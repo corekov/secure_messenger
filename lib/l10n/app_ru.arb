@@ -61,5 +61,17 @@
   "aboutMe": "Обо мне",
   "noBioSet": "Информация не указана",
   "tellUsAboutYourself": "Расскажите о себе...",
-  "savedToGallery": "Сохранено в галерею"
+  "savedToGallery": "Сохранено в галерею",
+  "storageAndData": "Данные и память",
+  "autoClearCache": "Автоочистка кэша через",
+  "never": "Никогда",
+  "oneDay": "1 День",
+  "oneWeek": "1 Неделю",
+  "oneMonth": "1 Месяц",
+  "activeStatus": "В сети",
+  "avatarUpdated": "Аватар успешно обновлен",
+  "avatarUpdateFailed": "Ошибка обновления аватара: {error}",
+  "bioUpdated": "Информация обновлена",
+  "bioUpdateFailed": "Ошибка обновления информации: {error}",
+  "tapToRetry": "Нажмите, чтобы повторить"
 }

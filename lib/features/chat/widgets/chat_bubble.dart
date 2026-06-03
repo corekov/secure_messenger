@@ -212,7 +212,8 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Tap to retry ', style: TextStyle(fontSize: 10, color: color)),
+            Text(AppLocalizations.of(context)!.tapToRetry, style: TextStyle(fontSize: 10, color: color)),
+            const SizedBox(width: 4),
             iconWidget,
           ],
         ),
