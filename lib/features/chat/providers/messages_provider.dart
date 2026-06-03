@@ -137,6 +137,7 @@ class Messages extends _$Messages {
               fileId: payload.fileId,
               fileName: payload.fileName,
               fileSize: payload.fileSize,
+              status: data['status'] ?? 'sent',
             );
           } catch (_) {
             msg = MessageModel(
@@ -147,6 +148,7 @@ class Messages extends _$Messages {
               timestamp: data['created_at'] != null
                   ? DateTime.parse(data['created_at'])
                   : DateTime.now(),
+              status: data['status'] ?? 'sent',
             );
           }
 
@@ -188,7 +190,26 @@ class Messages extends _$Messages {
           );
 
           if (existingIdx != -1) {
-            await localRepo.deleteMessage(currentMessages[existingIdx].id);
+            final oldMsg = currentMessages[existingIdx];
+            
+            // Preserve local file properties that the backend doesn't know about
+            if (msg.localFilePath == null && oldMsg.localFilePath != null) {
+              msg = MessageModel(
+                id: msg.id,
+                chatId: msg.chatId,
+                senderId: msg.senderId,
+                content: msg.content,
+                timestamp: msg.timestamp,
+                messageType: msg.messageType,
+                fileId: msg.fileId ?? oldMsg.fileId,
+                fileName: msg.fileName ?? oldMsg.fileName,
+                fileSize: msg.fileSize ?? oldMsg.fileSize,
+                localFilePath: oldMsg.localFilePath,
+                status: data['status'] ?? 'sent',
+              );
+            }
+
+            await localRepo.deleteMessage(oldMsg.id);
             await localRepo.saveMessage(msg);
             final newMessages = List<MessageModel>.from(currentMessages);
             newMessages[existingIdx] = msg;
@@ -201,6 +222,56 @@ class Messages extends _$Messages {
           // Update UI instantly
           state = AsyncData([msg, ...currentMessages]);
         }
+      } else if (payload['type'] == 'message_read') {
+        final data = payload['payload'];
+        if (data['chat_id'] == chatId) {
+          final readerId = data['reader_id'];
+          
+          final token = await storage.getAccessToken();
+          String? currentUserId;
+          if (token != null) {
+            final parts = token.split('.');
+            if (parts.length == 3) {
+              try {
+                String normalized = base64Url.normalize(parts[1]);
+                switch (normalized.length % 4) {
+                  case 2: normalized += '=='; break;
+                  case 3: normalized += '='; break;
+                }
+                final decoded = utf8.decode(base64Url.decode(normalized));
+                currentUserId = jsonDecode(decoded)['user_id'];
+              } catch (_) {}
+            }
+          }
+
+          if (readerId != currentUserId) {
+            // Mark all my delivered/sent messages as read
+            final currentMessages = state.value ?? [];
+            bool updated = false;
+            final newMessages = currentMessages.map((m) {
+              if (m.senderId == 'me' && m.status != 'read') {
+                updated = true;
+                final newM = MessageModel(
+                  id: m.id,
+                  chatId: m.chatId,
+                  senderId: m.senderId,
+                  content: m.content,
+                  timestamp: m.timestamp,
+                  messageType: m.messageType,
+                  fileId: m.fileId,
+                  fileName: m.fileName,
+                  fileSize: m.fileSize,
+                  localFilePath: m.localFilePath,
+                  status: 'read',
+                );
+                localRepo.saveMessage(newM);
+                return newM;
+              }
+              return m;
+            }).toList();
+            if (updated) state = AsyncData(newMessages);
+          }
+        }
       }
     });
 
@@ -211,6 +282,12 @@ class Messages extends _$Messages {
 
     // Trigger background sync
     _syncMessages(chatId);
+    
+    // Notify peer we read their messages
+    ref.read(webSocketManagerProvider.notifier).sendMessage({
+      'type': 'message_read',
+      'payload': {'chat_id': chatId},
+    });
 
     return initialMessages;
   }
@@ -288,6 +365,7 @@ class Messages extends _$Messages {
             fileId: payload.fileId,
             fileName: payload.fileName,
             fileSize: payload.fileSize,
+            status: data['status'] ?? 'sent',
           );
         } catch (_) {
           msg = MessageModel(
@@ -298,6 +376,7 @@ class Messages extends _$Messages {
             timestamp: data['created_at'] != null
                 ? DateTime.parse(data['created_at'])
                 : DateTime.now(),
+            status: data['status'] ?? 'sent',
           );
         }
 
@@ -362,6 +441,7 @@ class Messages extends _$Messages {
       senderId: senderId,
       content: content,
       timestamp: DateTime.now(),
+      status: 'sending',
     );
 
     final localRepo = ref.read(localChatRepositoryProvider);
@@ -382,6 +462,34 @@ class Messages extends _$Messages {
         'iv': '', // IV is prepended to ciphertext in Dart cryptography package
         'message_type': 'text',
       },
+    });
+
+    // Check for timeout
+    Future.delayed(const Duration(seconds: 10), () async {
+      final currentMsg = await localRepo.getMessage(msg.id);
+      if (currentMsg != null && currentMsg.status == 'sending') {
+        final errorMsg = MessageModel(
+          id: currentMsg.id,
+          chatId: currentMsg.chatId,
+          senderId: currentMsg.senderId,
+          content: currentMsg.content,
+          timestamp: currentMsg.timestamp,
+          messageType: currentMsg.messageType,
+          fileId: currentMsg.fileId,
+          fileName: currentMsg.fileName,
+          fileSize: currentMsg.fileSize,
+          localFilePath: currentMsg.localFilePath,
+          status: 'error',
+        );
+        await localRepo.saveMessage(errorMsg);
+        final list = state.value ?? [];
+        final idx = list.indexWhere((m) => m.id == currentMsg.id);
+        if (idx != -1) {
+          final updated = List<MessageModel>.from(list);
+          updated[idx] = errorMsg;
+          state = AsyncData(updated);
+        }
+      }
     });
   }
 
@@ -455,6 +563,7 @@ class Messages extends _$Messages {
       fileName: fileName,
       fileSize: fileSize,
       localFilePath: filePath,
+      status: 'sending',
     );
 
     final localRepo = ref.read(localChatRepositoryProvider);
@@ -474,6 +583,34 @@ class Messages extends _$Messages {
         'message_type': messageType,
         'file_id': fileId,
       },
+    });
+
+    // Timeout
+    Future.delayed(const Duration(seconds: 10), () async {
+      final currentMsg = await localRepo.getMessage(msg.id);
+      if (currentMsg != null && currentMsg.status == 'sending') {
+        final errorMsg = MessageModel(
+          id: currentMsg.id,
+          chatId: currentMsg.chatId,
+          senderId: currentMsg.senderId,
+          content: currentMsg.content,
+          timestamp: currentMsg.timestamp,
+          messageType: currentMsg.messageType,
+          fileId: currentMsg.fileId,
+          fileName: currentMsg.fileName,
+          fileSize: currentMsg.fileSize,
+          localFilePath: currentMsg.localFilePath,
+          status: 'error',
+        );
+        await localRepo.saveMessage(errorMsg);
+        final list = state.value ?? [];
+        final idx = list.indexWhere((m) => m.id == currentMsg.id);
+        if (idx != -1) {
+          final updated = List<MessageModel>.from(list);
+          updated[idx] = errorMsg;
+          state = AsyncData(updated);
+        }
+      }
     });
   }
 
@@ -515,5 +652,106 @@ class Messages extends _$Messages {
     } catch (e) {
       // Handle download error
     }
+  }
+
+  Future<void> resendMessage(MessageModel msg) async {
+    if (msg.status != 'error') return;
+
+    final storage = ref.read(secureStorageServiceProvider);
+    final token = await storage.getAccessToken();
+    String? currentUserId;
+    if (token != null) {
+      final parts = token.split('.');
+      if (parts.length == 3) {
+        try {
+          String normalized = base64Url.normalize(parts[1]);
+          switch (normalized.length % 4) {
+            case 2: normalized += '=='; break;
+            case 3: normalized += '='; break;
+          }
+          final decoded = utf8.decode(base64Url.decode(normalized));
+          currentUserId = jsonDecode(decoded)['user_id'];
+        } catch (_) {}
+      }
+    }
+
+    String? peerPublicKey = await _resolvePublicKey(chatId, currentUserId);
+    if (peerPublicKey == null) return;
+
+    String ciphertext;
+    try {
+      final encryptionService = ref.read(encryptionServiceProvider);
+      ciphertext = await encryptionService.encryptMessage(
+        msg.content, // for files, this is already the JSON payload
+        peerPublicKey,
+      );
+    } catch (e) {
+      return;
+    }
+
+    final newMsg = MessageModel(
+      id: msg.id,
+      chatId: msg.chatId,
+      senderId: msg.senderId,
+      content: msg.content,
+      timestamp: DateTime.now(),
+      messageType: msg.messageType,
+      fileId: msg.fileId,
+      fileName: msg.fileName,
+      fileSize: msg.fileSize,
+      localFilePath: msg.localFilePath,
+      status: 'sending',
+    );
+
+    final localRepo = ref.read(localChatRepositoryProvider);
+    await localRepo.saveMessage(newMsg);
+
+    final currentMessages = state.value ?? [];
+    final idx = currentMessages.indexWhere((m) => m.id == msg.id);
+    if (idx != -1) {
+      final updated = List<MessageModel>.from(currentMessages);
+      updated[idx] = newMsg;
+      state = AsyncData(updated);
+    }
+
+    ref.read(webSocketManagerProvider.notifier).sendMessage({
+      'type': 'message',
+      'payload': {
+        'id': newMsg.id,
+        'chat_id': newMsg.chatId,
+        'sender_id': 'me',
+        'ciphertext': ciphertext,
+        'iv': '',
+        'message_type': newMsg.messageType,
+        'file_id': newMsg.fileId,
+      },
+    });
+
+    Future.delayed(const Duration(seconds: 10), () async {
+      final currentMsg = await localRepo.getMessage(newMsg.id);
+      if (currentMsg != null && currentMsg.status == 'sending') {
+        final errorMsg = MessageModel(
+          id: currentMsg.id,
+          chatId: currentMsg.chatId,
+          senderId: currentMsg.senderId,
+          content: currentMsg.content,
+          timestamp: currentMsg.timestamp,
+          messageType: currentMsg.messageType,
+          fileId: currentMsg.fileId,
+          fileName: currentMsg.fileName,
+          fileSize: currentMsg.fileSize,
+          localFilePath: currentMsg.localFilePath,
+          status: 'error',
+        );
+        await localRepo.saveMessage(errorMsg);
+        final list = state.value ?? [];
+        final i = list.indexWhere((m) => m.id == currentMsg.id);
+        if (i != -1) {
+          final upd = List<MessageModel>.from(list);
+          upd[i] = errorMsg;
+          state = AsyncData(upd);
+        }
+      }
+    });
   }
 }

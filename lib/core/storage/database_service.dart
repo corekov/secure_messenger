@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -54,6 +54,11 @@ class DatabaseService {
       } catch (_) {}
       try {
         await db.execute('ALTER TABLE chats ADD COLUMN bio TEXT');
+      } catch (_) {}
+    }
+    if (oldVersion < 8) {
+      try {
+        await db.execute("ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'sent'");
       } catch (_) {}
     }
   }
@@ -94,6 +99,7 @@ class DatabaseService {
         file_name $textNullable,
         file_size INTEGER,
         local_file_path $textNullable,
+        status TEXT NOT NULL DEFAULT 'sent',
         FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
       )
     ''');

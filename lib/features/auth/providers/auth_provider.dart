@@ -3,6 +3,8 @@ import '../services/auth_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/security/encryption_service.dart';
 import '../../user/services/user_service.dart';
+import '../../settings/providers/cache_settings_provider.dart';
+import '../../chat/repositories/local_chat_repository.dart';
 
 part 'auth_provider.g.dart';
 
@@ -47,6 +49,13 @@ class Auth extends _$Auth {
         );
       } catch (e) {
         // Ignore network errors on startup
+      }
+      
+      // Clear old cache if configured
+      final cacheRetentionDays = ref.read(cacheSettingsProvider);
+      if (cacheRetentionDays > 0) {
+        final localRepo = ref.read(localChatRepositoryProvider);
+        await localRepo.clearOldCache(cacheRetentionDays);
       }
     }
     

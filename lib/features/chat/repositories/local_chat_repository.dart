@@ -1,3 +1,4 @@
+import 'dart:io' as dart_io;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -125,6 +126,40 @@ class LocalChatRepository {
       {'is_read': 1},
       where: 'chat_id = ? AND is_read = 0',
       whereArgs: [chatId],
+    );
+  }
+
+  Future<void> clearOldCache(int retentionDays) async {
+    if (retentionDays <= 0) return;
+    
+    final db = await _dbService.database;
+    final cutoff = DateTime.now().subtract(Duration(days: retentionDays)).millisecondsSinceEpoch;
+    
+    // Find all messages older than cutoff that have a local file
+    final maps = await db.query(
+      'messages',
+      where: 'timestamp < ? AND local_file_path IS NOT NULL',
+      whereArgs: [cutoff],
+    );
+    
+    for (final map in maps) {
+      final path = map['local_file_path'] as String?;
+      if (path != null) {
+        try {
+          final file = dart_io.File(path);
+          if (file.existsSync()) {
+            file.deleteSync();
+          }
+        } catch (_) {}
+      }
+    }
+    
+    // Update db to set local_file_path to null
+    await db.update(
+      'messages',
+      {'local_file_path': null},
+      where: 'timestamp < ? AND local_file_path IS NOT NULL',
+      whereArgs: [cutoff],
     );
   }
 }

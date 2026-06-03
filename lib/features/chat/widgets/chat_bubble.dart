@@ -149,10 +149,77 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
               ),
             ],
           ),
-          child: contentWidget,
+          child: Column(
+            crossAxisAlignment: widget.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              contentWidget,
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${widget.message.timestamp.hour.toString().padLeft(2, '0')}:${widget.message.timestamp.minute.toString().padLeft(2, '0')}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: widget.isMe ? Colors.white70 : (isDark ? Colors.white54 : Colors.black54),
+                    ),
+                  ),
+                  if (widget.isMe) ...[
+                    const SizedBox(width: 4),
+                    _buildStatusIcon(),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildStatusIcon() {
+    IconData icon;
+    Color color = Colors.white70;
+    
+    switch (widget.message.status) {
+      case 'sending':
+        icon = Icons.access_time;
+        break;
+      case 'error':
+        icon = Icons.error_outline;
+        color = Colors.redAccent;
+        break;
+      case 'read':
+        icon = Icons.done_all;
+        color = Colors.blue.shade200;
+        break;
+      case 'delivered':
+        icon = Icons.done_all;
+        break;
+      case 'sent':
+      default:
+        icon = Icons.check;
+        break;
+    }
+    
+    final iconWidget = Icon(icon, size: 12, color: color);
+    
+    if (widget.message.status == 'error') {
+      return GestureDetector(
+        onTap: () {
+          ref.read(messagesProvider(widget.message.chatId).notifier).resendMessage(widget.message);
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Tap to retry ', style: TextStyle(fontSize: 10, color: color)),
+            iconWidget,
+          ],
+        ),
+      );
+    }
+    
+    return iconWidget;
   }
 
   Widget _buildImageContent(ThemeData theme, AppLocalizations l10n) {
@@ -281,6 +348,8 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
 
   Widget _buildActionRow(ThemeData theme) {
     final textColor = widget.isMe ? Colors.white70 : theme.textTheme.bodyMedium?.color?.withAlpha(150);
+    final isDocument = widget.message.messageType == 'file';
+    
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -289,14 +358,14 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
           Text(_formatFileSize(widget.message.fileSize!), style: TextStyle(color: textColor, fontSize: 12)),
         const SizedBox(width: 16),
         InkWell(
-          onTap: _saveToDevice,
+          onTap: isDocument ? _handleTap : _saveToDevice,
           child: Padding(
             padding: const EdgeInsets.all(4.0),
             child: Row(
               children: [
-                Icon(Icons.download, size: 16, color: textColor),
+                Icon(isDocument ? Icons.open_in_new : Icons.download, size: 16, color: textColor),
                 const SizedBox(width: 4),
-                Text(AppLocalizations.of(context)!.save, style: TextStyle(color: textColor, fontSize: 12)),
+                Text(isDocument ? 'Open' : AppLocalizations.of(context)!.save, style: TextStyle(color: textColor, fontSize: 12)),
               ],
             ),
           ),

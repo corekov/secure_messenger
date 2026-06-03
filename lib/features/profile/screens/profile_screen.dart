@@ -160,64 +160,109 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 32),
               
               // Bio Section
-              Text(l10n.aboutMe, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              if (_isEditingBio) ...[
-                TextField(
-                  controller: _bioController,
-                  maxLength: 150,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: l10n.tellUsAboutYourself,
-                    border: const OutlineInputBorder(),
+              Material(
+                color: Theme.of(context).cardColor,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: Theme.of(context).brightness == Brightness.dark 
+                        ? Colors.white.withAlpha(10) 
+                        : Colors.black.withAlpha(10),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() => _isEditingBio = false);
-                      },
-                      child: Text(l10n.cancel),
-                    ),
-                    ElevatedButton(
-                      onPressed: _saveBio,
-                      child: Text(l10n.save),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blueAccent.withAlpha(30),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.info_outline, color: Colors.blueAccent, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            l10n.aboutMe, 
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const Spacer(),
+                          if (!_isEditingBio)
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent),
+                              onPressed: () {
+                                _bioController.text = profile.bio ?? '';
+                                setState(() => _isEditingBio = true);
+                              },
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (_isEditingBio) ...[
+                        TextField(
+                          controller: _bioController,
+                          maxLength: 150,
+                          maxLines: 3,
+                          style: const TextStyle(fontSize: 15),
+                          decoration: InputDecoration(
+                            hintText: l10n.tellUsAboutYourself,
+                            filled: true,
+                            fillColor: Theme.of(context).scaffoldBackgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.all(16),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => setState(() => _isEditingBio = false),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.grey,
+                              ),
+                              child: Text(l10n.cancel),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: _saveBio,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueAccent,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              ),
+                              child: Text(l10n.save, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        Text(
                           profile.bio?.isNotEmpty == true ? profile.bio! : l10n.noBioSet,
                           style: TextStyle(
+                            fontSize: 15,
+                            height: 1.5,
                             color: profile.bio?.isNotEmpty == true 
                                 ? Theme.of(context).textTheme.bodyLarge?.color 
                                 : Colors.grey,
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        onPressed: () {
-                          _bioController.text = profile.bio ?? '';
-                          setState(() => _isEditingBio = true);
-                        },
-                      ),
+                      ],
                     ],
                   ),
                 ),
-              ],
+              ),
               
               const SizedBox(height: 32),
               OutlinedButton.icon(

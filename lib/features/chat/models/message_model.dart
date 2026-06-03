@@ -10,6 +10,7 @@ class MessageModel {
   final String? fileName;
   final int? fileSize;
   final String? localFilePath;
+  final String status;
 
   const MessageModel({
     required this.id,
@@ -23,6 +24,7 @@ class MessageModel {
     this.fileName,
     this.fileSize,
     this.localFilePath,
+    this.status = 'sent',
   });
 
   Map<String, dynamic> toMap() {
@@ -38,6 +40,7 @@ class MessageModel {
       'file_name': fileName,
       'file_size': fileSize,
       'local_file_path': localFilePath,
+      'status': status,
     };
   }
 
@@ -54,6 +57,7 @@ class MessageModel {
       fileName: map['file_name'] as String?,
       fileSize: map['file_size'] as int?,
       localFilePath: map['local_file_path'] as String?,
+      status: map['status'] as String? ?? 'sent',
     );
   }
 }

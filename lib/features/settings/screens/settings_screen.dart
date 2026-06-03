@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 
 import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../providers/cache_settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -12,6 +13,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(localeProvider);
+    final cacheRetentionDays = ref.watch(cacheSettingsProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -42,6 +44,8 @@ class SettingsScreen extends ConsumerWidget {
           _buildThemeTile(context, ref, themeMode, l10n),
           const SizedBox(height: 16),
           _buildLanguageTile(context, ref, locale, l10n),
+          const SizedBox(height: 16),
+          _buildStorageTile(context, ref, cacheRetentionDays, l10n),
         ],
       ),
     );
@@ -153,6 +157,56 @@ class SettingsScreen extends ConsumerWidget {
           onChanged: (langCode) {
             if (langCode != null) {
               ref.read(localeProvider.notifier).setLocale(Locale(langCode));
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStorageTile(BuildContext context, WidgetRef ref, int currentRetention, AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    String getLabel(int days) {
+      if (days == 0) return 'Never';
+      if (days == 1) return '1 Day';
+      if (days == 7) return '1 Week';
+      if (days == 30) return '1 Month';
+      return '$days Days';
+    }
+    
+    return Material(
+      color: Theme.of(context).cardColor,
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.orangeAccent.withAlpha(30),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.storage_outlined, color: Colors.orange, size: 24),
+        ),
+        title: const Text('Storage & Data', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        subtitle: const Text('Auto-clear cache after period', style: TextStyle(fontSize: 13)),
+        trailing: DropdownButton<int>(
+          value: currentRetention,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down),
+          items: [
+            DropdownMenuItem(value: 0, child: Text(getLabel(0))),
+            DropdownMenuItem(value: 1, child: Text(getLabel(1))),
+            DropdownMenuItem(value: 7, child: Text(getLabel(7))),
+            DropdownMenuItem(value: 30, child: Text(getLabel(30))),
+          ],
+          onChanged: (days) {
+            if (days != null) {
+              ref.read(cacheSettingsProvider.notifier).setRetentionDays(days);
             }
           },
         ),

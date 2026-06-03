@@ -14,8 +14,7 @@ class MainShellScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      extendBody:
-          true, // Needed for floating nav bar to sit above content properly
+      extendBody: false, // Prevents nested navigator overlays (like dropdowns) from rendering under the bottom nav bar
       body: navigationShell,
       bottomNavigationBar: GestureDetector(
         behavior: HitTestBehavior.opaque,

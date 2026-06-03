@@ -33,7 +33,7 @@ final class ChatListProvider
   ChatList create() => ChatList();
 }
 
-String _$chatListHash() => r'79d8a600eae6f1f6f1b2c9d6ab117d2ccccbfe71';
+String _$chatListHash() => r'9d4b941fbbb1ab2374785db94e9aa37b252cabb5';
 
 abstract class _$ChatList extends $AsyncNotifier<List<ChatModel>> {
   FutureOr<List<ChatModel>> build();
