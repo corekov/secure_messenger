@@ -97,10 +97,7 @@ class AuthInterceptor extends QueuedInterceptor {
 
 @riverpod
 Dio dioClient(Ref ref) {
-  final defaultUrl =
-      (defaultTargetPlatform == TargetPlatform.android && !kIsWeb)
-      ? 'http://10.0.2.2:8080/api/v1'
-      : 'http://localhost:8080/api/v1';
+  const defaultUrl = 'https://renewed-passion-production-c85e.up.railway.app/api/v1';
 
   final dio = Dio(
     BaseOptions(

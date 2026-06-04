@@ -129,7 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     }
                                     return ClipOval(
                                       child: Image.network(
-                                        'http://10.0.2.2:8080${profile.avatarUrl}',
+                                        'https://renewed-passion-production-c85e.up.railway.app${profile.avatarUrl}',
                                         headers: {
                                           'Authorization':
                                               'Bearer ${snapshot.data}',

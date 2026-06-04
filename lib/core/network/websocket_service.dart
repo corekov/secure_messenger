@@ -25,11 +25,9 @@ class WebSocketService {
   final List<Map<String, dynamic>> _offlineQueue = [];
 
   static const int _maxReconnectAttempts = 10;
-  static final String _apiUrl = String.fromEnvironment(
+  static const String _apiUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: (defaultTargetPlatform == TargetPlatform.android && !kIsWeb)
-        ? 'http://10.0.2.2:8080/api/v1'
-        : 'http://localhost:8080/api/v1',
+    defaultValue: 'https://renewed-passion-production-c85e.up.railway.app/api/v1',
   );
 
   static final String _wsUrl = String.fromEnvironment(

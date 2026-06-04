@@ -36,7 +36,7 @@ class AuthenticatedAvatar extends ConsumerWidget {
           ),
           child: ClipOval(
             child: Image.network(
-              'http://10.0.2.2:8080$avatarUrl',
+              'https://renewed-passion-production-c85e.up.railway.app$avatarUrl',
               headers: {'Authorization': 'Bearer ${snapshot.data}'},
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => _buildFallback(),
