@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -79,6 +79,13 @@ class DatabaseService {
         );
       } catch (_) {}
     }
+    if (oldVersion < 11) {
+      try {
+        await db.execute('ALTER TABLE chats ADD COLUMN is_secret INTEGER NOT NULL DEFAULT 0');
+        await db.execute('ALTER TABLE chats ADD COLUMN message_ttl INTEGER');
+        await db.execute('ALTER TABLE messages ADD COLUMN expires_at INTEGER');
+      } catch (_) {}
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -101,7 +108,9 @@ class DatabaseService {
         peer_id $textNullable,
         avatar_url $textNullable,
         bio $textNullable,
-        deleted_at INTEGER
+        deleted_at INTEGER,
+        is_secret $intType DEFAULT 0,
+        message_ttl INTEGER
       )
     ''');
 
@@ -120,6 +129,7 @@ class DatabaseService {
         local_file_path $textNullable,
         status TEXT NOT NULL DEFAULT 'sent',
         is_deleted $boolType DEFAULT 0,
+        expires_at INTEGER,
         FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
       )
     ''');
@@ -128,6 +138,12 @@ class DatabaseService {
   Future<void> close() async {
     final db = await database;
     db.close();
+  }
+
+  Future<void> clearDatabase() async {
+    final db = await database;
+    await db.execute('DELETE FROM messages');
+    await db.execute('DELETE FROM chats');
   }
 }
 

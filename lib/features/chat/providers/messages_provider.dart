@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/storage/secure_storage_service.dart';
@@ -45,14 +46,7 @@ class Messages extends _$Messages {
             peerPublicKey = members.first['identity_key'];
           }
           if (peerPublicKey != null && chat != null) {
-            final updatedChat = ChatModel(
-              id: chat.id,
-              name: chat.name,
-              lastMessage: chat.lastMessage,
-              lastMessageTime: chat.lastMessageTime,
-              unreadCount: chat.unreadCount,
-              peerPublicKey: peerPublicKey,
-            );
+            final updatedChat = chat.copyWith(peerPublicKey: peerPublicKey);
             await localRepo.saveChat(updatedChat);
           }
           return peerPublicKey;
@@ -139,6 +133,7 @@ class Messages extends _$Messages {
               fileName: payload.fileName,
               fileSize: payload.fileSize,
               status: data['status'] ?? 'sent',
+              expiresAt: data['expires_at'] != null ? DateTime.parse(data['expires_at']) : null,
             );
           } catch (_) {
             msg = MessageModel(
@@ -150,6 +145,7 @@ class Messages extends _$Messages {
                   ? DateTime.parse(data['created_at'])
                   : DateTime.now(),
               status: data['status'] ?? 'sent',
+              expiresAt: data['expires_at'] != null ? DateTime.parse(data['expires_at']) : null,
             );
           }
 
@@ -171,18 +167,7 @@ class Messages extends _$Messages {
                   payload.fileKey!,
                 );
 
-                msg = MessageModel(
-                  id: msg.id,
-                  chatId: msg.chatId,
-                  senderId: msg.senderId,
-                  content: msg.content,
-                  timestamp: msg.timestamp,
-                  messageType: msg.messageType,
-                  fileId: msg.fileId,
-                  fileName: msg.fileName,
-                  fileSize: msg.fileSize,
-                  localFilePath: localPath,
-                );
+                msg = msg.copyWith(localFilePath: localPath);
               }
             } catch (_) {}
           }
@@ -199,18 +184,13 @@ class Messages extends _$Messages {
 
             // Preserve local file properties that the backend doesn't know about
             if (msg.localFilePath == null && oldMsg.localFilePath != null) {
-              msg = MessageModel(
-                id: msg.id,
-                chatId: msg.chatId,
-                senderId: msg.senderId,
-                content: msg.content,
-                timestamp: msg.timestamp,
-                messageType: msg.messageType,
+              msg = msg.copyWith(
                 fileId: msg.fileId ?? oldMsg.fileId,
                 fileName: msg.fileName ?? oldMsg.fileName,
                 fileSize: msg.fileSize ?? oldMsg.fileSize,
                 localFilePath: oldMsg.localFilePath,
                 status: data['status'] ?? 'sent',
+                expiresAt: msg.expiresAt ?? oldMsg.expiresAt,
               );
             }
 
@@ -260,19 +240,7 @@ class Messages extends _$Messages {
             final newMessages = currentMessages.map((m) {
               if (m.senderId == 'me' && m.status != 'read') {
                 updated = true;
-                final newM = MessageModel(
-                  id: m.id,
-                  chatId: m.chatId,
-                  senderId: m.senderId,
-                  content: m.content,
-                  timestamp: m.timestamp,
-                  messageType: m.messageType,
-                  fileId: m.fileId,
-                  fileName: m.fileName,
-                  fileSize: m.fileSize,
-                  localFilePath: m.localFilePath,
-                  status: 'read',
-                );
+                final newM = m.copyWith(status: 'read');
                 localRepo.saveMessage(newM);
                 return newM;
               }
@@ -293,11 +261,38 @@ class Messages extends _$Messages {
               .where((m) => m.id != msgId)
               .toList();
           state = AsyncData(newMessages);
+          ref.read(chatListProvider.notifier).syncChats();
         }
       }
     });
 
-    ref.onDispose(() => sub.cancel());
+    final timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+      final currentMessages = state.value;
+      if (currentMessages == null || currentMessages.isEmpty) return;
+
+      final now = DateTime.now();
+      bool hasExpired = false;
+      final newMessages = <MessageModel>[];
+
+      for (final m in currentMessages) {
+        if (m.expiresAt != null && now.isAfter(m.expiresAt!)) {
+          hasExpired = true;
+          await localRepo.deleteMessage(m.id);
+        } else {
+          newMessages.add(m);
+        }
+      }
+
+      if (hasExpired) {
+        state = AsyncData(newMessages);
+        ref.read(chatListProvider.notifier).syncChats();
+      }
+    });
+
+    ref.onDispose(() {
+      sub.cancel();
+      timer.cancel();
+    });
 
     // Initial load from SQLite
     final initialMessages = await localRepo.getMessagesForChat(chatId);
@@ -350,9 +345,16 @@ class Messages extends _$Messages {
       String? peerPublicKey = await _resolvePublicKey(chatId, currentUserId);
 
       for (final data in remoteMessages.reversed) {
-        // Skip if already in DB
+        // Skip if already in DB and decrypted
         final existingMsg = await localRepo.getMessage(data['id']);
-        if (existingMsg != null) continue;
+        if (existingMsg != null) {
+          bool isDecrypted = false;
+          try {
+            jsonDecode(existingMsg.content);
+            isDecrypted = true;
+          } catch (_) {}
+          if (isDecrypted) continue;
+        }
 
         String decryptedContent = 'Secure message';
         if (peerPublicKey != null) {
@@ -388,6 +390,7 @@ class Messages extends _$Messages {
             fileName: payload.fileName,
             fileSize: payload.fileSize,
             status: data['status'] ?? 'sent',
+            expiresAt: data['expires_at'] != null ? DateTime.parse(data['expires_at']) : null,
           );
         } catch (_) {
           msg = MessageModel(
@@ -399,6 +402,7 @@ class Messages extends _$Messages {
                 ? DateTime.parse(data['created_at'])
                 : DateTime.now(),
             status: data['status'] ?? 'sent',
+            expiresAt: data['expires_at'] != null ? DateTime.parse(data['expires_at']) : null,
           );
         }
 

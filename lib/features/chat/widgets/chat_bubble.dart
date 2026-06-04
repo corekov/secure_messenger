@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +21,36 @@ class ChatBubble extends ConsumerStatefulWidget {
 
 class _ChatBubbleState extends ConsumerState<ChatBubble> {
   bool _isDownloading = false;
+  Timer? _expireTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startExpireTimer();
+  }
+
+  @override
+  void didUpdateWidget(ChatBubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.message.expiresAt != oldWidget.message.expiresAt) {
+      _startExpireTimer();
+    }
+  }
+
+  void _startExpireTimer() {
+    _expireTimer?.cancel();
+    if (widget.message.expiresAt != null) {
+      _expireTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _expireTimer?.cancel();
+    super.dispose();
+  }
 
   String _formatFileSize(int bytes) {
     if (bytes >= 1024 * 1024) {
@@ -224,6 +255,10 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
                           : (isDark ? Colors.white54 : Colors.black54),
                     ),
                   ),
+                  if (widget.message.expiresAt != null) ...[
+                    const SizedBox(width: 4),
+                    _buildExpireTimer(isDark),
+                  ],
                   if (widget.isMe) ...[
                     const SizedBox(width: 4),
                     _buildStatusIcon(),
@@ -234,6 +269,50 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildExpireTimer(bool isDark) {
+    final expiresAt = widget.message.expiresAt;
+    if (expiresAt == null) return const SizedBox.shrink();
+
+    final remaining = expiresAt.difference(DateTime.now());
+    if (remaining.isNegative) return const SizedBox.shrink();
+
+    final seconds = remaining.inSeconds % 60;
+    final minutes = remaining.inMinutes % 60;
+    final hours = remaining.inHours;
+
+    String timeStr;
+    if (hours > 0) {
+      timeStr = '${hours}h';
+    } else if (minutes > 0) {
+      timeStr = '${minutes}m';
+    } else {
+      timeStr = '${seconds}s';
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.timer_outlined,
+          size: 12,
+          color: widget.isMe
+              ? Colors.white70
+              : (isDark ? Colors.white54 : Colors.black54),
+        ),
+        const SizedBox(width: 2),
+        Text(
+          timeStr,
+          style: TextStyle(
+            fontSize: 10,
+            color: widget.isMe
+                ? Colors.white70
+                : (isDark ? Colors.white54 : Colors.black54),
+          ),
+        ),
+      ],
     );
   }
 

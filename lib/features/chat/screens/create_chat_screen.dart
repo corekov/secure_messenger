@@ -19,6 +19,8 @@ class CreateChatScreen extends ConsumerStatefulWidget {
 class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
   List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
+  bool _isSecret = false;
+  int _messageTtl = 60; // default 60 seconds
 
   Future<void> _searchUsers(String query) async {
     if (query.isEmpty) {
@@ -63,7 +65,11 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
   Future<void> _createChat(String targetUserId, String username) async {
     try {
       final chatService = ref.read(chatServiceProvider);
-      final chatData = await chatService.createDirectChat(targetUserId);
+      final chatData = await chatService.createDirectChat(
+        targetUserId,
+        isSecret: _isSecret,
+        messageTtl: _isSecret ? _messageTtl : null,
+      );
       if (mounted) {
         context.pop();
         context.push(
@@ -99,7 +105,7 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             child: TextField(
               style: TextStyle(
                 color: theme.textTheme.bodyLarge?.color,
@@ -122,6 +128,47 @@ class _CreateChatScreenState extends ConsumerState<CreateChatScreen> {
               ),
             ),
           ),
+          SwitchListTile(
+            title: Text(
+              l10n.secretChat,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(l10n.secretChatSubtitle),
+            value: _isSecret,
+            activeThumbColor: Colors.blueAccent,
+            onChanged: (val) {
+              setState(() {
+                _isSecret = val;
+              });
+            },
+          ),
+          if (_isSecret)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Text(l10n.disappearingTimer),
+                  const Spacer(),
+                  DropdownButton<int>(
+                    value: _messageTtl,
+                    items: [
+                      DropdownMenuItem(value: 10, child: Text(l10n.seconds10)),
+                      DropdownMenuItem(value: 30, child: Text(l10n.seconds30)),
+                      DropdownMenuItem(value: 60, child: Text(l10n.minute1)),
+                      DropdownMenuItem(value: 3600, child: Text(l10n.hour1)),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _messageTtl = val;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          const Divider(),
           if (_isLoading)
             const Padding(
               padding: EdgeInsets.all(32),

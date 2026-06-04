@@ -76,5 +76,18 @@
   "tapToRetry": "Tap to retry",
   "deleteForMe": "Delete for me",
   "deleteForEveryone": "Delete for everyone",
-  "messageDeleted": "Message deleted"
+  "messageDeleted": "Message deleted",
+  "noMessagesYet": "No messages yet",
+  "imageMessage": "📷 Image",
+  "videoMessage": "🎥 Video",
+  "documentMessage": "📄 Document",
+  "audioMessage": "🎵 Audio",
+  "secretChat": "Secret Chat",
+  "secretChatSubtitle": "Messages delete on a timer",
+  "disappearingTimer": "Disappearing Timer: ",
+  "seconds10": "10 seconds",
+  "seconds30": "30 seconds",
+  "minute1": "1 minute",
+  "hour1": "1 hour",
+  "secureChat": "Secure Chat"
 }

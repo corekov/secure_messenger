@@ -249,4 +249,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messageDeleted => 'Message deleted';
+
+  @override
+  String get noMessagesYet => 'No messages yet';
+
+  @override
+  String get imageMessage => '📷 Image';
+
+  @override
+  String get videoMessage => '🎥 Video';
+
+  @override
+  String get documentMessage => '📄 Document';
+
+  @override
+  String get audioMessage => '🎵 Audio';
+
+  @override
+  String get secretChat => 'Secret Chat';
+
+  @override
+  String get secretChatSubtitle => 'Messages delete on a timer';
+
+  @override
+  String get disappearingTimer => 'Disappearing Timer: ';
+
+  @override
+  String get seconds10 => '10 seconds';
+
+  @override
+  String get seconds30 => '30 seconds';
+
+  @override
+  String get minute1 => '1 minute';
+
+  @override
+  String get hour1 => '1 hour';
+
+  @override
+  String get secureChat => 'Secure Chat';
 }

@@ -14,6 +14,7 @@ import 'main_shell_screen.dart';
 
 import '../../features/profile/screens/peer_profile_screen.dart';
 import '../../features/chat/models/chat_model.dart';
+import '../../../l10n/app_localizations.dart';
 
 part 'app_router.g.dart';
 
@@ -138,7 +139,13 @@ GoRouter appRouter(Ref ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final chatId = state.pathParameters['id']!;
-          final chatName = state.extra as String? ?? 'Secure Chat';
+          
+          String defaultTitle = 'Secure Chat';
+          try {
+            defaultTitle = AppLocalizations.of(context)?.secureChat ?? defaultTitle;
+          } catch (_) {}
+          
+          final chatName = state.extra as String? ?? defaultTitle;
           return ChatScreen(chatId: chatId, chatName: chatName);
         },
       ),

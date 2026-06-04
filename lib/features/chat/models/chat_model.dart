@@ -11,6 +11,8 @@ class ChatModel {
   final String? avatarUrl;
   final String? bio;
   final DateTime? deletedAt;
+  final bool isSecret;
+  final int? messageTtl;
 
   const ChatModel({
     required this.id,
@@ -25,6 +27,8 @@ class ChatModel {
     this.avatarUrl,
     this.bio,
     this.deletedAt,
+    this.isSecret = false,
+    this.messageTtl,
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +45,8 @@ class ChatModel {
       'avatar_url': avatarUrl,
       'bio': bio,
       'deleted_at': deletedAt?.millisecondsSinceEpoch,
+      'is_secret': isSecret ? 1 : 0,
+      'message_ttl': messageTtl,
     };
   }
 
@@ -64,6 +70,8 @@ class ChatModel {
       deletedAt: map['deleted_at'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['deleted_at'] as int)
           : null,
+      isSecret: (map['is_secret'] as int?) == 1,
+      messageTtl: map['message_ttl'] as int?,
     );
   }
 
@@ -80,6 +88,8 @@ class ChatModel {
     String? avatarUrl,
     String? bio,
     DateTime? deletedAt,
+    bool? isSecret,
+    int? messageTtl,
   }) {
     return ChatModel(
       id: id ?? this.id,
@@ -94,6 +104,8 @@ class ChatModel {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       bio: bio ?? this.bio,
       deletedAt: deletedAt ?? this.deletedAt,
+      isSecret: isSecret ?? this.isSecret,
+      messageTtl: messageTtl ?? this.messageTtl,
     );
   }
 }

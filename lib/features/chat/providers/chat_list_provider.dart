@@ -1,8 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/network/websocket_service.dart';
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import '../models/chat_model.dart';
+import '../models/message_model.dart';
 import '../models/chat_message_payload.dart';
 import '../repositories/local_chat_repository.dart';
 import '../services/chat_service.dart';
@@ -10,6 +12,7 @@ import '../../../core/security/encryption_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/storage/database_service.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'chat_list_provider.g.dart';
 
@@ -24,10 +27,55 @@ class ChatList extends _$ChatList {
     // 2. Trigger background network sync
     syncChats();
 
-    // 3. Listen to real-time messages to update "Last Message", unread counts, and presence
+    final storage = ref.read(secureStorageServiceProvider);
+    final token = await storage.getAccessToken();
+    String? currentUserId;
+    if (token != null) {
+      final parts = token.split('.');
+      if (parts.length == 3) {
+        try {
+          String normalized = base64Url.normalize(parts[1]);
+          switch (normalized.length % 4) {
+            case 2:
+              normalized += '==';
+              break;
+            case 3:
+              normalized += '=';
+              break;
+          }
+          final decoded = utf8.decode(base64Url.decode(normalized));
+          currentUserId = jsonDecode(decoded)['user_id'];
+        } catch (_) {}
+      }
+    }
+
     final wsService = ref.watch(webSocketServiceProvider);
     final sub = wsService.messages.listen((payload) async {
-      if (payload['type'] == 'message' || payload['type'] == 'message_delete') {
+      if (payload['type'] == 'message') {
+        final data = payload['payload'];
+        if (data != null) {
+          final isMe = currentUserId != null && data['sender_id'] == currentUserId;
+          // Only save to messages if we can parse it (we don't need to decrypt it to just let it expire)
+          final msg = MessageModel(
+            id: data['id'],
+            chatId: data['chat_id'],
+            senderId: isMe ? 'me' : data['sender_id'],
+            content: data['ciphertext'] ?? '',
+            timestamp: data['created_at'] != null ? DateTime.parse(data['created_at']) : DateTime.now(),
+            status: data['status'] ?? 'sent',
+            expiresAt: data['expires_at'] != null ? DateTime.parse(data['expires_at']) : null,
+          );
+          await localRepo.saveMessage(msg);
+        }
+        syncChats();
+      } else if (payload['type'] == 'message_delete') {
+        final data = payload['payload'];
+        if (data != null && data['message_ids'] != null) {
+          final ids = List<String>.from(data['message_ids']);
+          for (final id in ids) {
+            await localRepo.deleteMessage(id);
+          }
+        }
         syncChats();
       } else if (payload['type'] == 'online' || payload['type'] == 'offline') {
         final data = payload['payload'];
@@ -67,7 +115,25 @@ class ChatList extends _$ChatList {
       }
     });
 
-    ref.onDispose(() => sub.cancel());
+    int _syncCounter = 0;
+    final timer = Timer.periodic(const Duration(seconds: 1), (_) async {
+      final deleted = await localRepo.deleteExpiredMessages();
+      if (deleted) {
+        syncChats();
+        _syncCounter = 0;
+      } else {
+        _syncCounter++;
+        if (_syncCounter >= 15) {
+          syncChats();
+          _syncCounter = 0;
+        }
+      }
+    });
+
+    ref.onDispose(() {
+      sub.cancel();
+      timer.cancel();
+    });
 
     return localChats;
   }
@@ -106,6 +172,16 @@ class ChatList extends _$ChatList {
       }
 
       final remoteChats = await chatService.getChats();
+      
+      final prefs = await SharedPreferences.getInstance();
+      final deletedChatsRaw = prefs.getStringList('deleted_chats_$currentUserId') ?? [];
+      final deletedChats = <String, DateTime>{};
+      for (final raw in deletedChatsRaw) {
+        final parts = raw.split('|');
+        if (parts.length == 2) {
+          deletedChats[parts[0]] = DateTime.fromMillisecondsSinceEpoch(int.tryParse(parts[1]) ?? 0);
+        }
+      }
 
       // Parse remote chats and sync to SQLite
       for (final chatData in remoteChats) {
@@ -123,13 +199,19 @@ class ChatList extends _$ChatList {
           final peerMembers = currentUserId != null
               ? members.where((m) => m['id'] != currentUserId).toList()
               : members;
+
+          if (peerMembers.isEmpty && members.length <= 1) {
+            // The other person left this direct chat. It is dead.
+            await localRepo.deleteChat(chatData['id']);
+            continue; // Skip saving this chat
+          }
+
           if (peerMembers.isNotEmpty) {
             name = peerMembers.first['username'] ?? 'User';
             peerPublicKey = peerMembers.first['identity_key'];
             peerId = peerMembers.first['id'];
             avatarUrl = peerMembers.first['avatar_url'];
             bio = peerMembers.first['bio'];
-            isOnline = peerMembers.first['is_active'] ?? false;
             if (peerMembers.first['last_seen'] != null) {
               lastSeen = DateTime.tryParse(peerMembers.first['last_seen']);
             }
@@ -139,9 +221,17 @@ class ChatList extends _$ChatList {
             peerId = members.first['id'];
             avatarUrl = members.first['avatar_url'];
             bio = members.first['bio'];
-            isOnline = members.first['is_active'] ?? false;
             if (members.first['last_seen'] != null) {
               lastSeen = DateTime.tryParse(members.first['last_seen']);
+            }
+          }
+          
+          if (peerId != null) {
+            final localChats = await localRepo.getChats();
+            final existingPeerChat = localChats.where((c) => c.peerId == peerId).firstOrNull;
+            if (existingPeerChat != null) {
+              isOnline = existingPeerChat.isOnline;
+              lastSeen = existingPeerChat.lastSeen ?? lastSeen;
             }
           }
         }
@@ -158,6 +248,11 @@ class ChatList extends _$ChatList {
           final localMsg = await localRepo.getMessage(lastMsg['id']);
           if (localMsg != null && localMsg.isDeleted) {
             useLocalLatest = true;
+          } else if (lastMsg['expires_at'] != null) {
+            final expiresAt = DateTime.parse(lastMsg['expires_at']);
+            if (DateTime.now().isAfter(expiresAt)) {
+              useLocalLatest = true;
+            }
           }
         }
 
@@ -227,14 +322,21 @@ class ChatList extends _$ChatList {
         // Preserve local real-time presence if it exists and contradicts stale server data
         final existingChat = await localRepo.getChat(chatData['id']);
 
-        DateTime? deletedAt;
+        DateTime? deletedAt = existingChat?.deletedAt;
+        
+        final prefsDeletedAt = deletedChats[chatData['id']];
+        if (prefsDeletedAt != null && (deletedAt == null || prefsDeletedAt.isAfter(deletedAt))) {
+          deletedAt = prefsDeletedAt;
+        }
+
+        if (deletedAt != null && lastMessageTime.isAfter(deletedAt)) {
+          deletedAt = null;
+        } else if (deletedAt != null) {
+          await localRepo.deleteChat(chatData['id']);
+          continue;
+        }
+        
         if (existingChat != null) {
-          deletedAt = existingChat.deletedAt;
-          
-          // Undelete if a new message arrived after the deletion timestamp
-          if (deletedAt != null && lastMessageTime.isAfter(deletedAt)) {
-            deletedAt = null;
-          }
           // If we already saw them online locally via WS, and server says offline, trust WS
           if (existingChat.isOnline && !isOnline) {
             isOnline = true;
@@ -262,6 +364,8 @@ class ChatList extends _$ChatList {
           avatarUrl: avatarUrl,
           bio: bio,
           deletedAt: deletedAt,
+          isSecret: chatData['is_secret'] ?? false,
+          messageTtl: chatData['message_ttl'],
         );
 
         await localRepo.saveChat(chat);
@@ -282,15 +386,37 @@ class ChatList extends _$ChatList {
 
       final chat = await localRepo.getChat(chatId);
       if (chat != null) {
-        if (chat.peerId == null) {
-          // Group chat - leave it
+        if (chat.peerId == null || chat.isSecret) {
+          // Group chat or Secret Direct chat - leave it
           final chatService = ref.read(chatServiceProvider);
           await chatService.deleteChat(chatId);
           await localRepo.deleteChat(chatId);
         } else {
-          // Direct chat - soft delete locally
-          final updatedChat = chat.copyWith(deletedAt: DateTime.now());
+          // Normal Direct chat - soft delete locally
+          final deletedTime = DateTime.now();
+          final updatedChat = chat.copyWith(deletedAt: deletedTime);
           await localRepo.saveChat(updatedChat);
+          
+          final storage = ref.read(secureStorageServiceProvider);
+          final token = await storage.getAccessToken();
+          if (token != null) {
+            try {
+              final parts = token.split('.');
+              String normalized = base64Url.normalize(parts[1]);
+              switch (normalized.length % 4) {
+                case 2: normalized += '=='; break;
+                case 3: normalized += '='; break;
+              }
+              final map = jsonDecode(utf8.decode(base64Url.decode(normalized)));
+              final uid = map['user_id'] ?? map['sub'];
+              if (uid != null) {
+                final prefs = await SharedPreferences.getInstance();
+                final dChats = prefs.getStringList('deleted_chats_$uid') ?? [];
+                dChats.add('${chatId}|${deletedTime.millisecondsSinceEpoch}');
+                await prefs.setStringList('deleted_chats_$uid', dChats);
+              }
+            } catch (_) {}
+          }
         }
       }
 

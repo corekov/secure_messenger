@@ -15,12 +15,18 @@ class ChatService {
     return data.cast<Map<String, dynamic>>();
   }
 
-  Future<Map<String, dynamic>> createDirectChat(String targetUserId) async {
+  Future<Map<String, dynamic>> createDirectChat(
+    String targetUserId, {
+    bool isSecret = false,
+    int? messageTtl,
+  }) async {
     final response = await _dio.post(
       '/chats',
       data: {
         'type': 'direct',
         'member_ids': [targetUserId],
+        if (isSecret) 'is_secret': true,
+        if (messageTtl != null) 'message_ttl': messageTtl,
       },
     );
     return response.data as Map<String, dynamic>;

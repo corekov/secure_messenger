@@ -11,6 +11,7 @@ import '../../../l10n/app_localizations.dart';
 import '../widgets/chat_bubble.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/authenticated_avatar.dart';
+import 'package:no_screenshot/no_screenshot.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
@@ -25,10 +26,21 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _textController = TextEditingController();
 
+  bool _secureAdded = false;
+
   @override
   void initState() {
     super.initState();
     _markAsRead();
+  }
+
+  @override
+  void dispose() {
+    if (_secureAdded) {
+      NoScreenshot.instance.screenshotOn();
+    }
+    _textController.dispose();
+    super.dispose();
   }
 
   Future<void> _markAsRead() async {
@@ -216,6 +228,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ?.where((c) => c.id == widget.chatId)
         .firstOrNull;
     final isOnline = chat?.isOnline ?? false;
+    final isSecret = chat?.isSecret ?? false;
+
+    if (isSecret && !_secureAdded) {
+      _secureAdded = true;
+      NoScreenshot.instance.screenshotOff();
+    }
 
     String statusText = l10n.offline;
     if (isOnline) {
@@ -234,6 +252,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           '${lastSeen.day}/${lastSeen.month}/${lastSeen.year}',
         );
       }
+    }
+
+    if (isSecret) {
+      String ttlStr = '';
+      if (chat?.messageTtl != null) {
+        final ttl = chat!.messageTtl!;
+        if (ttl >= 3600) {
+          ttlStr = '${ttl ~/ 3600}h';
+        } else if (ttl >= 60) {
+          ttlStr = '${ttl ~/ 60}m';
+        } else {
+          ttlStr = '${ttl}s';
+        }
+      }
+      statusText = 'Secure ($ttlStr) • $statusText';
     }
 
     return Scaffold(
@@ -279,12 +312,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    widget.chatName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                  Row(
+                    children: [
+                      if (isSecret) ...[
+                        Icon(Icons.shield, size: 14, color: theme.colorScheme.primary),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        widget.chatName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
                   if (chat != null)
                     Text(
@@ -304,6 +345,53 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         elevation: 1,
         titleSpacing: 0,
+        actions: [
+          if (isSecret)
+            IconButton(
+              icon: const Icon(Icons.timer),
+              tooltip: 'Change Timer',
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: theme.cardColor,
+                    title: const Text('Change Timer Duration'),
+                    content: const Text(
+                      'Changing the timer requires restarting the secure session. This will delete the current chat and allow you to set a new timer. Proceed?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text(
+                          l10n.cancel,
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color?.withAlpha(150),
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          'Restart Session',
+                          style: TextStyle(color: Colors.blueAccent),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirm == true && context.mounted) {
+                  try {
+                    await ref.read(chatListProvider.notifier).deleteChat(widget.chatId);
+                    if (context.mounted) {
+                      context.go('/'); 
+                    }
+                  } catch (_) {}
+                }
+              },
+            ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [

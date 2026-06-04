@@ -76,5 +76,18 @@
   "tapToRetry": "Нажмите, чтобы повторить",
   "deleteForMe": "Удалить у меня",
   "deleteForEveryone": "Удалить у всех",
-  "messageDeleted": "Сообщение удалено"
+  "messageDeleted": "Сообщение удалено",
+  "noMessagesYet": "Пока нет сообщений",
+  "imageMessage": "📷 Фото",
+  "videoMessage": "🎥 Видео",
+  "documentMessage": "📄 Документ",
+  "audioMessage": "🎵 Аудио",
+  "secretChat": "Секретный чат",
+  "secretChatSubtitle": "Удаление сообщений по таймеру",
+  "disappearingTimer": "Таймер удаления: ",
+  "seconds10": "10 секунд",
+  "seconds30": "30 секунд",
+  "minute1": "1 минута",
+  "hour1": "1 час",
+  "secureChat": "Защищенный чат"
 }

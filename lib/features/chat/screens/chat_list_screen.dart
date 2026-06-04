@@ -268,12 +268,46 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             ),
                         ],
                       ),
-                      title: Text(
-                        chat.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      title: Row(
+                        children: [
+                          if (chat.isSecret) ...[
+                            Icon(Icons.shield, size: 14, color: theme.colorScheme.primary),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(
+                              chat.name,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (chat.isSecret && chat.messageTtl != null) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withAlpha(20),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                chat.messageTtl! >= 3600 
+                                  ? '${chat.messageTtl! ~/ 3600}h' 
+                                  : chat.messageTtl! >= 60 
+                                    ? '${chat.messageTtl! ~/ 60}m' 
+                                    : '${chat.messageTtl}s',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 6),
@@ -376,15 +410,32 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       return l10n.secureMessageFallback;
     }
 
+    if (lastMessage == 'No messages yet') {
+      return l10n.noMessagesYet;
+    }
+    
+    if (lastMessage == '📷 Image' || lastMessage == '📷 Фото') {
+      return l10n.imageMessage;
+    }
+    if (lastMessage == '🎥 Video' || lastMessage == '🎥 Видео') {
+      return l10n.videoMessage;
+    }
+    if (lastMessage == '📄 Document' || lastMessage == '📄 Документ') {
+      return l10n.documentMessage;
+    }
+    if (lastMessage == '🎵 Audio' || lastMessage == '🎵 Аудио') {
+      return l10n.audioMessage;
+    }
+
     if (lastMessage.startsWith('{') && lastMessage.contains('"type"')) {
       try {
         final payload = jsonDecode(lastMessage);
         if (payload['type'] == 'image') {
-          return '📷 ${l10n.photoVideo}';
+          return l10n.imageMessage;
         } else if (payload['type'] == 'video') {
-          return '📹 ${l10n.photoVideo}';
+          return l10n.videoMessage;
         } else if (payload['type'] == 'file') {
-          return '📄 ${l10n.document}';
+          return l10n.documentMessage;
         }
       } catch (_) {
         // Ignore JSON parse errors, fall back to string

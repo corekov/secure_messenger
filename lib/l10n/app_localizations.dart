@@ -559,6 +559,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Message deleted'**
   String get messageDeleted;
+
+  /// No description provided for @noMessagesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get noMessagesYet;
+
+  /// No description provided for @imageMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'📷 Image'**
+  String get imageMessage;
+
+  /// No description provided for @videoMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'🎥 Video'**
+  String get videoMessage;
+
+  /// No description provided for @documentMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'📄 Document'**
+  String get documentMessage;
+
+  /// No description provided for @audioMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'🎵 Audio'**
+  String get audioMessage;
+
+  /// No description provided for @secretChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Secret Chat'**
+  String get secretChat;
+
+  /// No description provided for @secretChatSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages delete on a timer'**
+  String get secretChatSubtitle;
+
+  /// No description provided for @disappearingTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Disappearing Timer: '**
+  String get disappearingTimer;
+
+  /// No description provided for @seconds10.
+  ///
+  /// In en, this message translates to:
+  /// **'10 seconds'**
+  String get seconds10;
+
+  /// No description provided for @seconds30.
+  ///
+  /// In en, this message translates to:
+  /// **'30 seconds'**
+  String get seconds30;
+
+  /// No description provided for @minute1.
+  ///
+  /// In en, this message translates to:
+  /// **'1 minute'**
+  String get minute1;
+
+  /// No description provided for @hour1.
+  ///
+  /// In en, this message translates to:
+  /// **'1 hour'**
+  String get hour1;
+
+  /// No description provided for @secureChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Chat'**
+  String get secureChat;
 }
 
 class _AppLocalizationsDelegate

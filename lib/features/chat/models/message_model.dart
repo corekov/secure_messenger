@@ -12,6 +12,7 @@ class MessageModel {
   final String? localFilePath;
   final String status;
   final bool isDeleted;
+  final DateTime? expiresAt;
 
   const MessageModel({
     required this.id,
@@ -27,6 +28,7 @@ class MessageModel {
     this.localFilePath,
     this.status = 'sent',
     this.isDeleted = false,
+    this.expiresAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -44,6 +46,7 @@ class MessageModel {
       'local_file_path': localFilePath,
       'status': status,
       'is_deleted': isDeleted ? 1 : 0,
+      'expires_at': expiresAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -62,6 +65,9 @@ class MessageModel {
       localFilePath: map['local_file_path'] as String?,
       status: map['status'] as String? ?? 'sent',
       isDeleted: (map['is_deleted'] as int?) == 1,
+      expiresAt: map['expires_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['expires_at'] as int)
+          : null,
     );
   }
 
@@ -79,6 +85,7 @@ class MessageModel {
     String? localFilePath,
     String? status,
     bool? isDeleted,
+    DateTime? expiresAt,
   }) {
     return MessageModel(
       id: id ?? this.id,
@@ -94,6 +101,7 @@ class MessageModel {
       localFilePath: localFilePath ?? this.localFilePath,
       status: status ?? this.status,
       isDeleted: isDeleted ?? this.isDeleted,
+      expiresAt: expiresAt ?? this.expiresAt,
     );
   }
 }

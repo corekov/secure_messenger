@@ -5,6 +5,7 @@ import '../../../core/security/encryption_service.dart';
 import '../../user/services/user_service.dart';
 import '../../settings/providers/cache_settings_provider.dart';
 import '../../chat/repositories/local_chat_repository.dart';
+import '../../../core/storage/database_service.dart';
 
 part 'auth_provider.g.dart';
 
@@ -121,6 +122,10 @@ class Auth extends _$Auth {
     // Clear tokens securely
     final storage = ref.read(secureStorageServiceProvider);
     await storage.clearTokens();
+    
+    // Clear local SQLite database
+    final dbService = ref.read(databaseServiceProvider);
+    await dbService.clearDatabase();
 
     state = false;
   }
@@ -128,6 +133,10 @@ class Auth extends _$Auth {
   void forceLogout() {
     final storage = ref.read(secureStorageServiceProvider);
     storage.clearTokens();
+    
+    final dbService = ref.read(databaseServiceProvider);
+    dbService.clearDatabase();
+    
     state = false;
   }
 }

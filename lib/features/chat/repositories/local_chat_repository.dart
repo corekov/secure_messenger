@@ -101,6 +101,18 @@ class LocalChatRepository {
     );
   }
 
+  Future<bool> deleteExpiredMessages() async {
+    final db = await _dbService.database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final count = await db.update(
+      'messages',
+      {'is_deleted': 1},
+      where: 'is_deleted = 0 AND expires_at IS NOT NULL AND expires_at <= ?',
+      whereArgs: [now],
+    );
+    return count > 0;
+  }
+
   Future<List<MessageModel>> getMessagesForChat(
     String chatId, {
     int limit = 50,
@@ -124,6 +136,27 @@ class LocalChatRepository {
     return List.generate(maps.length, (i) {
       return MessageModel.fromMap(maps[i]);
     });
+  }
+
+
+  Future<int> getUnreadCount(String chatId, String currentUserId) async {
+    final db = await _dbService.database;
+    final chat = await getChat(chatId);
+    final deletedAt = chat?.deletedAt?.millisecondsSinceEpoch;
+
+    final result = await db.rawQuery(
+      '''
+      SELECT COUNT(*) as count FROM messages 
+      WHERE chat_id = ? 
+      AND sender_id != ? 
+      AND is_read = 0 
+      AND is_deleted = 0
+      ${deletedAt != null ? 'AND timestamp > ?' : ''}
+      ''',
+      deletedAt != null ? [chatId, currentUserId, deletedAt] : [chatId, currentUserId],
+    );
+
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
   Future<void> markMessagesAsRead(String chatId) async {

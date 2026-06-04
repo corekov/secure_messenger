@@ -249,4 +249,43 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get messageDeleted => 'Сообщение удалено';
+
+  @override
+  String get noMessagesYet => 'Пока нет сообщений';
+
+  @override
+  String get imageMessage => '📷 Фото';
+
+  @override
+  String get videoMessage => '🎥 Видео';
+
+  @override
+  String get documentMessage => '📄 Документ';
+
+  @override
+  String get audioMessage => '🎵 Аудио';
+
+  @override
+  String get secretChat => 'Секретный чат';
+
+  @override
+  String get secretChatSubtitle => 'Удаление сообщений по таймеру';
+
+  @override
+  String get disappearingTimer => 'Таймер удаления: ';
+
+  @override
+  String get seconds10 => '10 секунд';
+
+  @override
+  String get seconds30 => '30 секунд';
+
+  @override
+  String get minute1 => '1 минута';
+
+  @override
+  String get hour1 => '1 час';
+
+  @override
+  String get secureChat => 'Защищенный чат';
 }
