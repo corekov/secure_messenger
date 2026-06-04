@@ -22,6 +22,7 @@ dependencies:
   go_router: ^17.2.3
   image_picker: ^1.2.2
   intl: ^0.20.2
+  local_auth: ^3.0.1
   no_screenshot: ^1.1.0
   open_filex: ^4.7.0
   path: ^1.9.1
@@ -36,6 +37,7 @@ dependencies:
   video_player: ^2.11.1
   web_socket_channel: ^3.0.3
 
+  crypto: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

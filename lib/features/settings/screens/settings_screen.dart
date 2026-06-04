@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../core/localization/locale_provider.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../providers/cache_settings_provider.dart';
+import '../../auth/providers/app_lock_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -42,6 +43,8 @@ class SettingsScreen extends ConsumerWidget {
           _buildThemeTile(context, ref, themeMode, l10n),
           const SizedBox(height: 16),
           _buildLanguageTile(context, ref, locale, l10n),
+          const SizedBox(height: 16),
+          _buildBiometricTile(context, ref, l10n),
           const SizedBox(height: 16),
           _buildStorageTile(context, ref, cacheRetentionDays, l10n),
         ],
@@ -269,6 +272,46 @@ class SettingsScreen extends ConsumerWidget {
             }
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildBiometricTile(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+    final isBiometricEnabled = ref.watch(biometricSettingsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Material(
+      color: Theme.of(context).cardColor,
+      clipBehavior: Clip.hardEdge,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10),
+        ),
+      ),
+      child: SwitchListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        title: Text(
+          l10n.biometricSettings,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        subtitle: Text(
+          isBiometricEnabled ? l10n.activeStatus : 'Disabled',
+          style: const TextStyle(fontSize: 13),
+        ),
+        secondary: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.green.withAlpha(30),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.fingerprint, color: Colors.green, size: 24),
+        ),
+        value: isBiometricEnabled,
+        activeThumbColor: Colors.blueAccent,
+        onChanged: (val) {
+          ref.read(biometricSettingsProvider.notifier).setBiometricEnabled(val);
+        },
       ),
     );
   }

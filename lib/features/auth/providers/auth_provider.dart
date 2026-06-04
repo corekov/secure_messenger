@@ -6,6 +6,8 @@ import '../../user/services/user_service.dart';
 import '../../settings/providers/cache_settings_provider.dart';
 import '../../chat/repositories/local_chat_repository.dart';
 import '../../../core/storage/database_service.dart';
+import '../services/pin_auth_service.dart';
+import 'app_lock_provider.dart';
 
 part 'auth_provider.g.dart';
 
@@ -126,6 +128,12 @@ class Auth extends _$Auth {
     // Clear local SQLite database
     final dbService = ref.read(databaseServiceProvider);
     await dbService.clearDatabase();
+    
+    // Clear PIN and Biometric settings
+    ref.read(pinAuthServiceProvider).clearPin();
+    ref.read(biometricSettingsProvider.notifier).setBiometricEnabled(false);
+    ref.read(hasPinStateProvider.notifier).setHasPin(false);
+    ref.read(appLockedStateProvider.notifier).lock();
 
     state = false;
   }
@@ -136,6 +144,11 @@ class Auth extends _$Auth {
     
     final dbService = ref.read(databaseServiceProvider);
     dbService.clearDatabase();
+    
+    ref.read(pinAuthServiceProvider).clearPin();
+    ref.read(biometricSettingsProvider.notifier).setBiometricEnabled(false);
+    ref.read(hasPinStateProvider.notifier).setHasPin(false);
+    ref.read(appLockedStateProvider.notifier).lock();
     
     state = false;
   }

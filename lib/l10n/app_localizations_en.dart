@@ -288,4 +288,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get secureChat => 'Secure Chat';
+
+  @override
+  String get setPinTitle => 'Set a PIN Code';
+
+  @override
+  String get setPinSubtitle => 'Create a 4-digit PIN to secure your app';
+
+  @override
+  String get confirmPinTitle => 'Confirm PIN Code';
+
+  @override
+  String get confirmPinSubtitle => 'Enter the 4-digit PIN again to confirm';
+
+  @override
+  String get pinMismatch => 'PINs do not match. Please try again.';
+
+  @override
+  String get enableBiometricsTitle => 'Enable Biometrics';
+
+  @override
+  String get enableBiometricsSubtitle =>
+      'Would you like to use fingerprint or face recognition to unlock the app faster?';
+
+  @override
+  String get enable => 'Enable';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get enterPinTitle => 'Enter PIN';
+
+  @override
+  String get enterPinSubtitle => 'Enter your 4-digit PIN to unlock';
+
+  @override
+  String get incorrectPin => 'Incorrect PIN. Please try again.';
+
+  @override
+  String get biometricReason => 'Please authenticate to unlock the app';
+
+  @override
+  String get biometricSettings => 'Biometric Unlock';
 }

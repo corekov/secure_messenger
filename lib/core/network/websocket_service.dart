@@ -46,8 +46,9 @@ class WebSocketService {
 
     try {
       final token = await _storage.getAccessToken();
-      if (token == null)
+      if (token == null) {
         throw Exception('No auth token available for WebSocket');
+      }
 
       // Connect with token in headers (or modify URL if backend requires query param)
       _channel = WebSocketChannel.connect(

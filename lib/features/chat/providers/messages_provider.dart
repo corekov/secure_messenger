@@ -4,7 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import 'package:uuid/uuid.dart';
 import '../models/message_model.dart';
-import '../models/chat_model.dart';
 import '../repositories/local_chat_repository.dart';
 import '../../../core/network/websocket_manager.dart';
 import '../../../core/network/websocket_service.dart';

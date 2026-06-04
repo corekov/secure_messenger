@@ -26,7 +26,7 @@ class ChatService {
         'type': 'direct',
         'member_ids': [targetUserId],
         if (isSecret) 'is_secret': true,
-        if (messageTtl != null) 'message_ttl': messageTtl,
+        'message_ttl': ?messageTtl,
       },
     );
     return response.data as Map<String, dynamic>;

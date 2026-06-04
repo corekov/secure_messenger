@@ -115,17 +115,17 @@ class ChatList extends _$ChatList {
       }
     });
 
-    int _syncCounter = 0;
+    int syncCounter = 0;
     final timer = Timer.periodic(const Duration(seconds: 1), (_) async {
       final deleted = await localRepo.deleteExpiredMessages();
       if (deleted) {
         syncChats();
-        _syncCounter = 0;
+        syncCounter = 0;
       } else {
-        _syncCounter++;
-        if (_syncCounter >= 15) {
+        syncCounter++;
+        if (syncCounter >= 15) {
           syncChats();
-          _syncCounter = 0;
+          syncCounter = 0;
         }
       }
     });
@@ -412,7 +412,7 @@ class ChatList extends _$ChatList {
               if (uid != null) {
                 final prefs = await SharedPreferences.getInstance();
                 final dChats = prefs.getStringList('deleted_chats_$uid') ?? [];
-                dChats.add('${chatId}|${deletedTime.millisecondsSinceEpoch}');
+                dChats.add('$chatId|${deletedTime.millisecondsSinceEpoch}');
                 await prefs.setStringList('deleted_chats_$uid', dChats);
               }
             } catch (_) {}

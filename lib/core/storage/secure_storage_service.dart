@@ -59,6 +59,18 @@ class SecureStorageService {
     await _storage.delete(key: _privateKeyKey);
     await _storage.delete(key: _publicKeyKey);
   }
+
+  Future<void> savePin(String pinHash) async {
+    await _storage.write(key: 'app_pin_hash', value: pinHash);
+  }
+
+  Future<String?> getPin() async {
+    return await _storage.read(key: 'app_pin_hash');
+  }
+
+  Future<void> deletePin() async {
+    await _storage.delete(key: 'app_pin_hash');
+  }
 }
 
 @riverpod

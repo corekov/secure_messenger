@@ -89,5 +89,19 @@
   "seconds30": "30 seconds",
   "minute1": "1 minute",
   "hour1": "1 hour",
-  "secureChat": "Secure Chat"
+  "secureChat": "Secure Chat",
+  "setPinTitle": "Set a PIN Code",
+  "setPinSubtitle": "Create a 4-digit PIN to secure your app",
+  "confirmPinTitle": "Confirm PIN Code",
+  "confirmPinSubtitle": "Enter the 4-digit PIN again to confirm",
+  "pinMismatch": "PINs do not match. Please try again.",
+  "enableBiometricsTitle": "Enable Biometrics",
+  "enableBiometricsSubtitle": "Would you like to use fingerprint or face recognition to unlock the app faster?",
+  "enable": "Enable",
+  "skip": "Skip",
+  "enterPinTitle": "Enter PIN",
+  "enterPinSubtitle": "Enter your 4-digit PIN to unlock",
+  "incorrectPin": "Incorrect PIN. Please try again.",
+  "biometricReason": "Please authenticate to unlock the app",
+  "biometricSettings": "Biometric Unlock"
 }

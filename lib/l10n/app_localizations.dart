@@ -637,6 +637,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Secure Chat'**
   String get secureChat;
+
+  /// No description provided for @setPinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a PIN Code'**
+  String get setPinTitle;
+
+  /// No description provided for @setPinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a 4-digit PIN to secure your app'**
+  String get setPinSubtitle;
+
+  /// No description provided for @confirmPinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm PIN Code'**
+  String get confirmPinTitle;
+
+  /// No description provided for @confirmPinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 4-digit PIN again to confirm'**
+  String get confirmPinSubtitle;
+
+  /// No description provided for @pinMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'PINs do not match. Please try again.'**
+  String get pinMismatch;
+
+  /// No description provided for @enableBiometricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Biometrics'**
+  String get enableBiometricsTitle;
+
+  /// No description provided for @enableBiometricsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you like to use fingerprint or face recognition to unlock the app faster?'**
+  String get enableBiometricsSubtitle;
+
+  /// No description provided for @enable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable'**
+  String get enable;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @enterPinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter PIN'**
+  String get enterPinTitle;
+
+  /// No description provided for @enterPinSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your 4-digit PIN to unlock'**
+  String get enterPinSubtitle;
+
+  /// No description provided for @incorrectPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect PIN. Please try again.'**
+  String get incorrectPin;
+
+  /// No description provided for @biometricReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Please authenticate to unlock the app'**
+  String get biometricReason;
+
+  /// No description provided for @biometricSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric Unlock'**
+  String get biometricSettings;
 }
 
 class _AppLocalizationsDelegate

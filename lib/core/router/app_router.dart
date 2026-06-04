@@ -10,6 +10,9 @@ import '../../features/chat/screens/chat_screen.dart';
 import '../../features/chat/screens/create_chat_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/auth/screens/setup_pin_screen.dart';
+import '../../features/auth/screens/lock_screen.dart';
+import '../../features/auth/providers/app_lock_provider.dart';
 import 'main_shell_screen.dart';
 
 import '../../features/profile/screens/peer_profile_screen.dart';
@@ -29,6 +32,8 @@ class RouterNotifier extends ChangeNotifier {
   RouterNotifier(this._ref) {
     _ref.listen<bool>(authProvider, (previous, next) => notifyListeners());
     _ref.listen<bool>(authInitProvider, (previous, next) => notifyListeners());
+    _ref.listen<bool>(hasPinStateProvider, (previous, next) => notifyListeners());
+    _ref.listen<bool>(appLockedStateProvider, (previous, next) => notifyListeners());
   }
 }
 
@@ -49,18 +54,32 @@ GoRouter appRouter(Ref ref) {
       final isAuthenticated = ref.read(authProvider);
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToRegister = state.matchedLocation == '/register';
-      final isGoingToLoading = state.matchedLocation == '/loading';
-
       if (!isAuthenticated && !isGoingToLogin && !isGoingToRegister) {
         return '/login';
       }
 
-      if (isAuthenticated &&
-          (isGoingToLogin ||
-              isGoingToRegister ||
-              isGoingToLoading ||
-              state.matchedLocation == '/')) {
-        return '/chats';
+      if (isAuthenticated) {
+        final hasPin = ref.read(hasPinStateProvider);
+        final isLocked = ref.read(appLockedStateProvider);
+
+        if (!hasPin) {
+          if (state.matchedLocation != '/setup-pin') return '/setup-pin';
+          return null;
+        }
+
+        if (isLocked) {
+          if (state.matchedLocation != '/lock') return '/lock';
+          return null;
+        }
+
+        if (state.matchedLocation == '/login' ||
+            state.matchedLocation == '/register' ||
+            state.matchedLocation == '/loading' ||
+            state.matchedLocation == '/setup-pin' ||
+            state.matchedLocation == '/lock' ||
+            state.matchedLocation == '/') {
+          return '/chats';
+        }
       }
 
       return null;
@@ -133,6 +152,16 @@ GoRouter appRouter(Ref ref) {
         path: '/create-chat',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const CreateChatScreen(),
+      ),
+      GoRoute(
+        path: '/setup-pin',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SetupPinScreen(),
+      ),
+      GoRoute(
+        path: '/lock',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LockScreen(),
       ),
       GoRoute(
         path: '/chat/:id',

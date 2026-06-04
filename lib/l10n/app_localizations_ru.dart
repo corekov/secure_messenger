@@ -288,4 +288,51 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get secureChat => 'Защищенный чат';
+
+  @override
+  String get setPinTitle => 'Установите ПИН-код';
+
+  @override
+  String get setPinSubtitle =>
+      'Создайте 4-значный ПИН-код для защиты приложения';
+
+  @override
+  String get confirmPinTitle => 'Подтвердите ПИН-код';
+
+  @override
+  String get confirmPinSubtitle =>
+      'Введите 4-значный ПИН-код еще раз для подтверждения';
+
+  @override
+  String get pinMismatch => 'ПИН-коды не совпадают. Попробуйте еще раз.';
+
+  @override
+  String get enableBiometricsTitle => 'Включить биометрию';
+
+  @override
+  String get enableBiometricsSubtitle =>
+      'Хотите использовать отпечаток пальца или FaceID для быстрого входа в приложение?';
+
+  @override
+  String get enable => 'Включить';
+
+  @override
+  String get skip => 'Пропустить';
+
+  @override
+  String get enterPinTitle => 'Введите ПИН-код';
+
+  @override
+  String get enterPinSubtitle =>
+      'Введите ваш 4-значный ПИН-код для разблокировки';
+
+  @override
+  String get incorrectPin => 'Неверный ПИН-код. Попробуйте еще раз.';
+
+  @override
+  String get biometricReason =>
+      'Пожалуйста, пройдите аутентификацию для разблокировки приложения';
+
+  @override
+  String get biometricSettings => 'Вход по биометрии';
 }
