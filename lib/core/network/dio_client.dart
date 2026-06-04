@@ -14,7 +14,10 @@ class AuthInterceptor extends QueuedInterceptor {
   AuthInterceptor(this._storage, this._onLogout, this._dio);
 
   @override
-  Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  Future<void> onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     final token = await _storage.getAccessToken();
     if (token != null) {
       options.headers.remove('authorization');
@@ -25,7 +28,10 @@ class AuthInterceptor extends QueuedInterceptor {
   }
 
   @override
-  Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
     if (err.response?.statusCode == 401) {
       final token = await _storage.getAccessToken();
       if (token == null) {
@@ -66,9 +72,10 @@ class AuthInterceptor extends QueuedInterceptor {
 
       // Use a separate Dio instance to avoid interceptor loops
       final refreshDio = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
-      final response = await refreshDio.post('/auth/refresh', data: {
-        'refresh_token': refreshToken,
-      });
+      final response = await refreshDio.post(
+        '/auth/refresh',
+        data: {'refresh_token': refreshToken},
+      );
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -90,8 +97,9 @@ class AuthInterceptor extends QueuedInterceptor {
 
 @riverpod
 Dio dioClient(Ref ref) {
-  final defaultUrl = (defaultTargetPlatform == TargetPlatform.android && !kIsWeb) 
-      ? 'http://10.0.2.2:8080/api/v1' 
+  final defaultUrl =
+      (defaultTargetPlatform == TargetPlatform.android && !kIsWeb)
+      ? 'http://10.0.2.2:8080/api/v1'
       : 'http://localhost:8080/api/v1';
 
   final dio = Dio(
@@ -105,11 +113,13 @@ Dio dioClient(Ref ref) {
 
   final storage = ref.watch(secureStorageServiceProvider);
 
-  dio.interceptors.add(AuthInterceptor(
-    storage, 
-    () => ref.read(authProvider.notifier).forceLogout(), 
-    dio,
-  ));
+  dio.interceptors.add(
+    AuthInterceptor(
+      storage,
+      () => ref.read(authProvider.notifier).forceLogout(),
+      dio,
+    ),
+  );
 
   return dio;
 }

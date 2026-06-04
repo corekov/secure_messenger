@@ -15,16 +15,22 @@ class UserService {
     required String prekeySig,
     required List<String> oneTimeKeys,
   }) async {
-    await _dio.post('/users/keys', data: {
-      'identity_key': identityKey,
-      'signed_prekey': signedPrekey,
-      'prekey_sig': prekeySig,
-      'one_time_keys': oneTimeKeys,
-    });
+    await _dio.post(
+      '/users/keys',
+      data: {
+        'identity_key': identityKey,
+        'signed_prekey': signedPrekey,
+        'prekey_sig': prekeySig,
+        'one_time_keys': oneTimeKeys,
+      },
+    );
   }
 
   Future<List<Map<String, dynamic>>> searchUsers(String query) async {
-    final response = await _dio.get('/users/search', queryParameters: {'q': query});
+    final response = await _dio.get(
+      '/users/search',
+      queryParameters: {'q': query},
+    );
     final data = response.data as List;
     return data.cast<Map<String, dynamic>>();
   }

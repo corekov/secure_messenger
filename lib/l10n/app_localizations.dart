@@ -541,6 +541,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to retry'**
   String get tapToRetry;
+
+  /// No description provided for @deleteForMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for me'**
+  String get deleteForMe;
+
+  /// No description provided for @deleteForEveryone.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for everyone'**
+  String get deleteForEveryone;
+
+  /// No description provided for @messageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get messageDeleted;
 }
 
 class _AppLocalizationsDelegate

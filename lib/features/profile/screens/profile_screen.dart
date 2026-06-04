@@ -36,15 +36,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       await ref.read(profileProvider.notifier).uploadAvatar(File(image.path));
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.avatarUpdated)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.avatarUpdated)));
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.avatarUpdateFailed(e.toString())), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(l10n.avatarUpdateFailed(e.toString())),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     } finally {
@@ -54,19 +57,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _saveBio() async {
     try {
-      await ref.read(profileProvider.notifier).updateBio(_bioController.text.trim());
+      await ref
+          .read(profileProvider.notifier)
+          .updateBio(_bioController.text.trim());
       setState(() => _isEditingBio = false);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.bioUpdated)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.bioUpdated)));
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.bioUpdateFailed(e.toString())), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(l10n.bioUpdateFailed(e.toString())),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     }
@@ -78,17 +86,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.profile),
-      ),
+      appBar: AppBar(title: Text(l10n.profile)),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => const Center(child: Text('Failed to load profile')),
+        error: (err, stack) =>
+            const Center(child: Text('Failed to load profile')),
         data: (profile) {
           if (profile == null) return const SizedBox.shrink();
 
           return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
             children: [
               Center(
                 child: GestureDetector(
@@ -109,9 +116,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         child: CircleAvatar(
                           radius: 56,
                           backgroundColor: Theme.of(context).cardColor,
-                          child: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                          child:
+                              profile.avatarUrl != null &&
+                                  profile.avatarUrl!.isNotEmpty
                               ? FutureBuilder<String?>(
-                                  future: ref.read(secureStorageServiceProvider).getAccessToken(),
+                                  future: ref
+                                      .read(secureStorageServiceProvider)
+                                      .getAccessToken(),
                                   builder: (context, snapshot) {
                                     if (!snapshot.hasData) {
                                       return const CircularProgressIndicator();
@@ -119,21 +130,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     return ClipOval(
                                       child: Image.network(
                                         'http://10.0.2.2:8080${profile.avatarUrl}',
-                                        headers: {'Authorization': 'Bearer ${snapshot.data}'},
+                                        headers: {
+                                          'Authorization':
+                                              'Bearer ${snapshot.data}',
+                                        },
                                         width: 112,
                                         height: 112,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Icon(Icons.person, size: 60, color: Theme.of(context).iconTheme.color),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Icon(
+                                                  Icons.person,
+                                                  size: 60,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).iconTheme.color,
+                                                ),
                                       ),
                                     );
                                   },
                                 )
-                              : Icon(Icons.person, size: 60, color: Theme.of(context).iconTheme.color),
+                              : Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: Theme.of(context).iconTheme.color,
+                                ),
                         ),
                       ),
                       if (_isUploadingAvatar)
                         const Positioned.fill(
-                          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
                         )
                       else
                         Container(
@@ -142,7 +172,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             color: Colors.blueAccent,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                     ],
                   ),
@@ -152,17 +186,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Center(
                 child: Text(
                   profile.username,
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Center(
                 child: Text(
                   l10n.activeStatus,
-                  style: const TextStyle(color: Colors.greenAccent, fontSize: 14),
+                  style: const TextStyle(
+                    color: Colors.greenAccent,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Bio Section
               Material(
                 color: Theme.of(context).cardColor,
@@ -170,8 +210,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.white.withAlpha(10) 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withAlpha(10)
                         : Colors.black.withAlpha(10),
                   ),
                 ),
@@ -188,17 +228,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               color: Colors.blueAccent.withAlpha(30),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.info_outline, color: Colors.blueAccent, size: 20),
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: Colors.blueAccent,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            l10n.aboutMe, 
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            l10n.aboutMe,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const Spacer(),
                           if (!_isEditingBio)
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent),
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: Colors.blueAccent,
+                              ),
                               onPressed: () {
                                 _bioController.text = profile.bio ?? '';
                                 setState(() => _isEditingBio = true);
@@ -216,7 +266,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           decoration: InputDecoration(
                             hintText: l10n.tellUsAboutYourself,
                             filled: true,
-                            fillColor: Theme.of(context).scaffoldBackgroundColor,
+                            fillColor: Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide.none,
@@ -229,7 +281,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
-                              onPressed: () => setState(() => _isEditingBio = false),
+                              onPressed: () =>
+                                  setState(() => _isEditingBio = false),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.grey,
                               ),
@@ -245,20 +298,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
                               ),
-                              child: Text(l10n.save, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              child: Text(
+                                l10n.save,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ] else ...[
                         Text(
-                          profile.bio?.isNotEmpty == true ? profile.bio! : l10n.noBioSet,
+                          profile.bio?.isNotEmpty == true
+                              ? profile.bio!
+                              : l10n.noBioSet,
                           style: TextStyle(
                             fontSize: 15,
                             height: 1.5,
-                            color: profile.bio?.isNotEmpty == true 
-                                ? Theme.of(context).textTheme.bodyLarge?.color 
+                            color: profile.bio?.isNotEmpty == true
+                                ? Theme.of(context).textTheme.bodyLarge?.color
                                 : Colors.grey,
                           ),
                         ),
@@ -267,18 +330,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 32),
               OutlinedButton.icon(
                 onPressed: () {
                   ref.read(authProvider.notifier).logout();
                 },
                 icon: const Icon(Icons.logout, color: Colors.redAccent),
-                label: Text(l10n.logout, style: const TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold)),
+                label: Text(
+                  l10n.logout,
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.redAccent.withAlpha(100)),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ],

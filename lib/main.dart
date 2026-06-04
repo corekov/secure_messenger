@@ -16,9 +16,7 @@ void main() async {
 
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       child: const MyApp(),
     ),
   );
@@ -32,7 +30,7 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(localeProvider);
-    
+
     // Initialize the WebSocketManager so it starts listening to Auth state
     ref.watch(webSocketManagerProvider);
 
@@ -48,10 +46,7 @@ class MyApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en', ''),
-        Locale('ru', ''),
-      ],
+      supportedLocales: const [Locale('en', ''), Locale('ru', '')],
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

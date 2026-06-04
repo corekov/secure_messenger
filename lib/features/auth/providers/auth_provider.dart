@@ -50,7 +50,7 @@ class Auth extends _$Auth {
       } catch (e) {
         // Ignore network errors on startup
       }
-      
+
       // Clear old cache if configured
       final cacheRetentionDays = ref.read(cacheSettingsProvider);
       if (cacheRetentionDays > 0) {
@@ -58,7 +58,7 @@ class Auth extends _$Auth {
         await localRepo.clearOldCache(cacheRetentionDays);
       }
     }
-    
+
     // Auth check complete
     ref.read(authInitProvider.notifier).complete();
   }
@@ -66,7 +66,7 @@ class Auth extends _$Auth {
   Future<void> login(String username, String password) async {
     final authService = ref.read(authServiceProvider);
     await authService.login(username, password);
-    
+
     // Generate/Load keys after successful login
     final encryptionService = ref.read(encryptionServiceProvider);
     await encryptionService.initialize();
@@ -90,9 +90,9 @@ class Auth extends _$Auth {
 
   Future<void> register(String username, String password) async {
     final authService = ref.read(authServiceProvider);
-    
+
     await authService.register(username, password);
-    
+
     // Generate/Load keys after successful registration
     final encryptionService = ref.read(encryptionServiceProvider);
     await encryptionService.initialize();
@@ -117,11 +117,11 @@ class Auth extends _$Auth {
     } catch (e) {
       // ignore logout network errors
     }
-    
+
     // Clear tokens securely
     final storage = ref.read(secureStorageServiceProvider);
     await storage.clearTokens();
-    
+
     state = false;
   }
 

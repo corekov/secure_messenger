@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -35,14 +35,18 @@ class DatabaseService {
       await db.execute('DELETE FROM messages');
     }
     if (oldVersion < 4) {
-      await db.execute('ALTER TABLE chats ADD COLUMN is_online INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE chats ADD COLUMN is_online INTEGER NOT NULL DEFAULT 0',
+      );
       await db.execute('ALTER TABLE chats ADD COLUMN last_seen INTEGER');
     }
     if (oldVersion < 5) {
       await db.execute('ALTER TABLE chats ADD COLUMN peer_id TEXT');
     }
     if (oldVersion < 6) {
-      await db.execute("ALTER TABLE messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'text'");
+      await db.execute(
+        "ALTER TABLE messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'text'",
+      );
       await db.execute('ALTER TABLE messages ADD COLUMN file_id TEXT');
       await db.execute('ALTER TABLE messages ADD COLUMN file_name TEXT');
       await db.execute('ALTER TABLE messages ADD COLUMN file_size INTEGER');
@@ -58,7 +62,21 @@ class DatabaseService {
     }
     if (oldVersion < 8) {
       try {
-        await db.execute("ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'sent'");
+        await db.execute(
+          "ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'sent'",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 9) {
+      try {
+        await db.execute('ALTER TABLE chats ADD COLUMN deleted_at INTEGER');
+      } catch (_) {}
+    }
+    if (oldVersion < 10) {
+      try {
+        await db.execute(
+          'ALTER TABLE messages ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0',
+        );
       } catch (_) {}
     }
   }
@@ -82,7 +100,8 @@ class DatabaseService {
         last_seen INTEGER,
         peer_id $textNullable,
         avatar_url $textNullable,
-        bio $textNullable
+        bio $textNullable,
+        deleted_at INTEGER
       )
     ''');
 
@@ -100,6 +119,7 @@ class DatabaseService {
         file_size INTEGER,
         local_file_path $textNullable,
         status TEXT NOT NULL DEFAULT 'sent',
+        is_deleted $boolType DEFAULT 0,
         FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE
       )
     ''');

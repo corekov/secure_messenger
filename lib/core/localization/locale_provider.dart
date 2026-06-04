@@ -25,4 +25,3 @@ class LocaleNotifier extends _$LocaleNotifier {
     prefs.setString(_localeKey, locale.languageCode);
   }
 }
-

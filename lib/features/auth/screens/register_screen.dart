@@ -45,7 +45,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.person_add_alt_1, size: 80, color: Colors.blueAccent),
+                  const Icon(
+                    Icons.person_add_alt_1,
+                    size: 80,
+                    color: Colors.blueAccent,
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     l10n.createAccount,
@@ -80,7 +84,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           decoration: InputDecoration(
                             labelText: l10n.username,
                             labelStyle: const TextStyle(color: Colors.white70),
-                            prefixIcon: const Icon(Icons.person_outline, color: Colors.white70),
+                            prefixIcon: const Icon(
+                              Icons.person_outline,
+                              color: Colors.white70,
+                            ),
                             filled: true,
                             fillColor: Colors.black.withAlpha(50),
                             border: OutlineInputBorder(
@@ -97,7 +104,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           decoration: InputDecoration(
                             labelText: l10n.password,
                             labelStyle: const TextStyle(color: Colors.white70),
-                            prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.white70,
+                            ),
                             filled: true,
                             fillColor: Colors.black.withAlpha(50),
                             border: OutlineInputBorder(
@@ -120,15 +130,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           onPressed: () async {
                             try {
-                              await ref.read(authProvider.notifier).register(
-                                _usernameController.text,
-                                _passwordController.text,
-                              );
+                              await ref
+                                  .read(authProvider.notifier)
+                                  .register(
+                                    _usernameController.text,
+                                    _passwordController.text,
+                                  );
                             } catch (e) {
                               if (context.mounted) {
-                                String errorMessage = e.toString().replaceAll('Exception: ', '');
-                                if (e is DioException && e.response?.data != null) {
-                                  errorMessage = ErrorFormatter.formatBackendError(e.response!.data);
+                                String errorMessage = e.toString().replaceAll(
+                                  'Exception: ',
+                                  '',
+                                );
+                                if (e is DioException &&
+                                    e.response?.data != null) {
+                                  errorMessage =
+                                      ErrorFormatter.formatBackendError(
+                                        e.response!.data,
+                                      );
                                 }
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -142,7 +161,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           },
                           child: Text(
                             l10n.signUp,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.1,
+                            ),
                           ),
                         ),
                       ],

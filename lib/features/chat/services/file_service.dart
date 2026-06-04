@@ -25,12 +25,9 @@ class FileService {
     final cipher = AesGcm.with256bits();
 
     final fileBytes = await File(filePath).readAsBytes();
-    
+
     // Encrypt
-    final secretBox = await cipher.encrypt(
-      fileBytes,
-      secretKey: secretKey,
-    );
+    final secretBox = await cipher.encrypt(fileBytes, secretKey: secretKey);
 
     // Save encrypted bytes to a temp file
     final tempDir = await getTemporaryDirectory();
@@ -41,7 +38,10 @@ class FileService {
   }
 
   /// Decrypts an encrypted file buffer using AES-GCM 256-bit.
-  Future<List<int>> decryptFileBytes(List<int> encryptedBytes, String base64Key) async {
+  Future<List<int>> decryptFileBytes(
+    List<int> encryptedBytes,
+    String base64Key,
+  ) async {
     final keyBytes = base64Decode(base64Key);
     final secretKey = SecretKey(keyBytes);
     final cipher = AesGcm.with256bits();
@@ -52,10 +52,7 @@ class FileService {
       macLength: cipher.macAlgorithm.macLength,
     );
 
-    final decrypted = await cipher.decrypt(
-      secretBox,
-      secretKey: secretKey,
-    );
+    final decrypted = await cipher.decrypt(secretBox, secretKey: secretKey);
 
     return decrypted;
   }
@@ -63,7 +60,7 @@ class FileService {
   /// Uploads an encrypted file to the backend. Returns the file ID.
   Future<String> uploadEncryptedFile(String encryptedFilePath) async {
     final file = File(encryptedFilePath);
-    
+
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(
         file.path,
@@ -73,7 +70,7 @@ class FileService {
     });
 
     final response = await _dio.post('/files/upload', data: formData);
-    
+
     if (response.statusCode == 200 || response.statusCode == 201) {
       return response.data['id'] as String;
     } else {
@@ -82,7 +79,11 @@ class FileService {
   }
 
   /// Downloads and decrypts a file, saving it securely to app documents.
-  Future<String> downloadAndDecryptFile(String fileId, String fileName, String base64Key) async {
+  Future<String> downloadAndDecryptFile(
+    String fileId,
+    String fileName,
+    String base64Key,
+  ) async {
     final response = await _dio.get(
       '/files/$fileId/download',
       options: Options(responseType: ResponseType.bytes),
@@ -99,7 +100,7 @@ class FileService {
     final appDir = await getApplicationDocumentsDirectory();
     final safeFileName = '${const Uuid().v4()}_$fileName';
     final localPath = p.join(appDir.path, safeFileName);
-    
+
     await File(localPath).writeAsBytes(decryptedBytes);
     return localPath;
   }

@@ -11,6 +11,7 @@ import '../../../core/security/encryption_service.dart';
 import '../services/chat_service.dart';
 import '../providers/file_service_provider.dart';
 import '../models/chat_message_payload.dart';
+import 'chat_list_provider.dart';
 
 part 'messages_provider.g.dart';
 
@@ -158,14 +159,18 @@ class Messages extends _$Messages {
               msg.localFilePath == null &&
               (msg.messageType == 'image' || msg.messageType == 'video') &&
               (msg.fileSize ?? 0) < 15 * 1024 * 1024) {
-            
             try {
-              final payload = ChatMessagePayload.fromJson(jsonDecode(msg.content));
+              final payload = ChatMessagePayload.fromJson(
+                jsonDecode(msg.content),
+              );
               if (payload.fileKey != null && payload.fileName != null) {
                 final fileService = ref.read(fileServiceProvider);
                 final localPath = await fileService.downloadAndDecryptFile(
-                    msg.fileId!, payload.fileName!, payload.fileKey!);
-                
+                  msg.fileId!,
+                  payload.fileName!,
+                  payload.fileKey!,
+                );
+
                 msg = MessageModel(
                   id: msg.id,
                   chatId: msg.chatId,
@@ -191,7 +196,7 @@ class Messages extends _$Messages {
 
           if (existingIdx != -1) {
             final oldMsg = currentMessages[existingIdx];
-            
+
             // Preserve local file properties that the backend doesn't know about
             if (msg.localFilePath == null && oldMsg.localFilePath != null) {
               msg = MessageModel(
@@ -226,7 +231,7 @@ class Messages extends _$Messages {
         final data = payload['payload'];
         if (data['chat_id'] == chatId) {
           final readerId = data['reader_id'];
-          
+
           final token = await storage.getAccessToken();
           String? currentUserId;
           if (token != null) {
@@ -235,8 +240,12 @@ class Messages extends _$Messages {
               try {
                 String normalized = base64Url.normalize(parts[1]);
                 switch (normalized.length % 4) {
-                  case 2: normalized += '=='; break;
-                  case 3: normalized += '='; break;
+                  case 2:
+                    normalized += '==';
+                    break;
+                  case 3:
+                    normalized += '=';
+                    break;
                 }
                 final decoded = utf8.decode(base64Url.decode(normalized));
                 currentUserId = jsonDecode(decoded)['user_id'];
@@ -272,6 +281,19 @@ class Messages extends _$Messages {
             if (updated) state = AsyncData(newMessages);
           }
         }
+      } else if (payload['type'] == 'message_delete') {
+        final data = payload['payload'];
+        if (data['chat_id'] == chatId) {
+          final msgId = data['message_id'];
+          // Delete locally
+          await localRepo.deleteMessage(msgId);
+          // Remove from state
+          final currentMessages = state.value ?? [];
+          final newMessages = currentMessages
+              .where((m) => m.id != msgId)
+              .toList();
+          state = AsyncData(newMessages);
+        }
       }
     });
 
@@ -282,7 +304,7 @@ class Messages extends _$Messages {
 
     // Trigger background sync
     _syncMessages(chatId);
-    
+
     // Notify peer we read their messages
     ref.read(webSocketManagerProvider.notifier).sendMessage({
       'type': 'message_read',
@@ -467,20 +489,8 @@ class Messages extends _$Messages {
     // Check for timeout
     Future.delayed(const Duration(seconds: 10), () async {
       final currentMsg = await localRepo.getMessage(msg.id);
-      if (currentMsg != null && currentMsg.status == 'sending') {
-        final errorMsg = MessageModel(
-          id: currentMsg.id,
-          chatId: currentMsg.chatId,
-          senderId: currentMsg.senderId,
-          content: currentMsg.content,
-          timestamp: currentMsg.timestamp,
-          messageType: currentMsg.messageType,
-          fileId: currentMsg.fileId,
-          fileName: currentMsg.fileName,
-          fileSize: currentMsg.fileSize,
-          localFilePath: currentMsg.localFilePath,
-          status: 'error',
-        );
+      if (currentMsg != null && currentMsg.status == 'sending' && !currentMsg.isDeleted) {
+        final errorMsg = currentMsg.copyWith(status: 'error');
         await localRepo.saveMessage(errorMsg);
         final list = state.value ?? [];
         final idx = list.indexWhere((m) => m.id == currentMsg.id);
@@ -501,14 +511,14 @@ class Messages extends _$Messages {
     required int fileSize,
   }) async {
     final fileService = ref.read(fileServiceProvider);
-    
+
     // 1. Generate key and encrypt
     final fileKey = await fileService.generateSymmetricKey();
     final encryptedPath = await fileService.encryptFile(filePath, fileKey);
-    
+
     // 2. Upload file
     final fileId = await fileService.uploadEncryptedFile(encryptedPath);
-    
+
     final storage = ref.read(secureStorageServiceProvider);
     final token = await storage.getAccessToken();
     String? currentUserId;
@@ -518,8 +528,12 @@ class Messages extends _$Messages {
         try {
           String normalized = base64Url.normalize(parts[1]);
           switch (normalized.length % 4) {
-            case 2: normalized += '=='; break;
-            case 3: normalized += '='; break;
+            case 2:
+              normalized += '==';
+              break;
+            case 3:
+              normalized += '=';
+              break;
           }
           final decoded = utf8.decode(base64Url.decode(normalized));
           currentUserId = jsonDecode(decoded)['user_id'];
@@ -546,7 +560,10 @@ class Messages extends _$Messages {
     String ciphertext;
     try {
       final encryptionService = ref.read(encryptionServiceProvider);
-      ciphertext = await encryptionService.encryptMessage(jsonPayload, peerPublicKey);
+      ciphertext = await encryptionService.encryptMessage(
+        jsonPayload,
+        peerPublicKey,
+      );
     } catch (e) {
       throw Exception('Encryption failed: $e');
     }
@@ -588,20 +605,8 @@ class Messages extends _$Messages {
     // Timeout
     Future.delayed(const Duration(seconds: 10), () async {
       final currentMsg = await localRepo.getMessage(msg.id);
-      if (currentMsg != null && currentMsg.status == 'sending') {
-        final errorMsg = MessageModel(
-          id: currentMsg.id,
-          chatId: currentMsg.chatId,
-          senderId: currentMsg.senderId,
-          content: currentMsg.content,
-          timestamp: currentMsg.timestamp,
-          messageType: currentMsg.messageType,
-          fileId: currentMsg.fileId,
-          fileName: currentMsg.fileName,
-          fileSize: currentMsg.fileSize,
-          localFilePath: currentMsg.localFilePath,
-          status: 'error',
-        );
+      if (currentMsg != null && currentMsg.status == 'sending' && !currentMsg.isDeleted) {
+        final errorMsg = currentMsg.copyWith(status: 'error');
         await localRepo.saveMessage(errorMsg);
         final list = state.value ?? [];
         final idx = list.indexWhere((m) => m.id == currentMsg.id);
@@ -618,7 +623,7 @@ class Messages extends _$Messages {
     final currentMessages = state.value ?? [];
     final idx = currentMessages.indexWhere((m) => m.id == messageId);
     if (idx == -1) return;
-    
+
     final msg = currentMessages[idx];
     if (msg.fileId == null || msg.localFilePath != null) return;
 
@@ -628,7 +633,10 @@ class Messages extends _$Messages {
 
       final fileService = ref.read(fileServiceProvider);
       final localPath = await fileService.downloadAndDecryptFile(
-          msg.fileId!, payload.fileName!, payload.fileKey!);
+        msg.fileId!,
+        payload.fileName!,
+        payload.fileKey!,
+      );
 
       final updatedMsg = MessageModel(
         id: msg.id,
@@ -666,8 +674,12 @@ class Messages extends _$Messages {
         try {
           String normalized = base64Url.normalize(parts[1]);
           switch (normalized.length % 4) {
-            case 2: normalized += '=='; break;
-            case 3: normalized += '='; break;
+            case 2:
+              normalized += '==';
+              break;
+            case 3:
+              normalized += '=';
+              break;
           }
           final decoded = utf8.decode(base64Url.decode(normalized));
           currentUserId = jsonDecode(decoded)['user_id'];
@@ -753,5 +765,31 @@ class Messages extends _$Messages {
         }
       }
     });
+  }
+
+  Future<void> deleteMessage(
+    MessageModel msg, {
+    bool forEveryone = false,
+  }) async {
+    final localRepo = ref.read(localChatRepositoryProvider);
+
+    // 1. Delete locally
+    await localRepo.deleteMessage(msg.id);
+
+    // 2. Remove from state
+    final currentMessages = state.value ?? [];
+    final newMessages = currentMessages.where((m) => m.id != msg.id).toList();
+    state = AsyncData(newMessages);
+
+    // 3. If for everyone, send WS event
+    if (forEveryone && msg.senderId == 'me') {
+      ref.read(webSocketManagerProvider.notifier).sendMessage({
+        'type': 'message_delete',
+        'payload': {'message_id': msg.id, 'chat_id': msg.chatId},
+      });
+    }
+
+    // Sync chats to update the lastMessage in ChatList
+    ref.read(chatListProvider.notifier).syncChats();
   }
 }

@@ -16,11 +16,7 @@ class ChatScreen extends ConsumerStatefulWidget {
   final String chatId;
   final String chatName;
 
-  const ChatScreen({
-    super.key,
-    required this.chatId,
-    required this.chatName,
-  });
+  const ChatScreen({super.key, required this.chatId, required this.chatName});
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -48,11 +44,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
-    
+
     _textController.clear();
-    
+
     try {
-      await ref.read(messagesProvider(widget.chatId).notifier).sendMessage(text);
+      await ref
+          .read(messagesProvider(widget.chatId).notifier)
+          .sendMessage(text);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -67,7 +65,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Future<void> _showAttachmentOptions() async {
     final theme = Theme.of(context);
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -106,43 +104,48 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ],
           ),
         );
-      }
+      },
     );
   }
 
   Future<void> _pickMedia(bool fromCamera) async {
     final picker = ImagePicker();
     XFile? mediaFile;
-    
+
     if (fromCamera) {
       mediaFile = await picker.pickImage(source: ImageSource.camera);
     } else {
       mediaFile = await picker.pickMedia();
     }
-    
+
     if (mediaFile == null) return;
-    
+
     final file = File(mediaFile.path);
     int size = await file.length();
-    
+
     String finalPath = file.path;
-    final isVideo = mediaFile.name.toLowerCase().endsWith('.mp4') || 
-                    mediaFile.name.toLowerCase().endsWith('.mov');
+    final isVideo =
+        mediaFile.name.toLowerCase().endsWith('.mp4') ||
+        mediaFile.name.toLowerCase().endsWith('.mov');
     final messageType = isVideo ? 'video' : 'image';
-    
+
     if (!isVideo && size > 15 * 1024 * 1024) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.fileTooLargeCompressing)),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.fileTooLargeCompressing,
+            ),
+          ),
         );
       }
-      
+
       final compressedFile = await FlutterImageCompress.compressAndGetFile(
-        file.path, 
+        file.path,
         '${file.path}_compressed.jpg',
         quality: 70,
       );
-      
+
       if (compressedFile != null) {
         finalPath = compressedFile.path;
         size = await File(finalPath).length();
@@ -155,20 +158,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
       return;
     }
-    
+
     try {
-      await ref.read(messagesProvider(widget.chatId).notifier).sendFileMessage(
-        filePath: finalPath,
-        messageType: messageType,
-        fileName: mediaFile.name,
-        mimeType: isVideo ? 'video/mp4' : 'image/jpeg',
-        fileSize: size,
-      );
+      await ref
+          .read(messagesProvider(widget.chatId).notifier)
+          .sendFileMessage(
+            filePath: finalPath,
+            messageType: messageType,
+            fileName: mediaFile.name,
+            mimeType: isVideo ? 'video/mp4' : 'image/jpeg',
+            fileSize: size,
+          );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send file: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send file: $e')));
       }
     }
   }
@@ -176,22 +181,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Future<void> _pickDocument() async {
     final result = await FilePicker.pickFiles();
     if (result == null || result.files.single.path == null) return;
-    
+
     final file = result.files.single;
-    
+
     try {
-      await ref.read(messagesProvider(widget.chatId).notifier).sendFileMessage(
-        filePath: file.path!,
-        messageType: 'file',
-        fileName: file.name,
-        mimeType: 'application/octet-stream',
-        fileSize: file.size,
-      );
+      await ref
+          .read(messagesProvider(widget.chatId).notifier)
+          .sendFileMessage(
+            filePath: file.path!,
+            messageType: 'file',
+            fileName: file.name,
+            mimeType: 'application/octet-stream',
+            fileSize: file.size,
+          );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send file: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send file: $e')));
       }
     }
   }
@@ -203,21 +210,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Find current chat to get online status
-    final chat = chatList.value?.where((c) => c.id == widget.chatId).firstOrNull;
+    final chat = chatList.value
+        ?.where((c) => c.id == widget.chatId)
+        .firstOrNull;
     final isOnline = chat?.isOnline ?? false;
-    
+
     String statusText = l10n.offline;
     if (isOnline) {
       statusText = l10n.online;
     } else if (chat?.lastSeen != null) {
       final lastSeen = chat!.lastSeen!;
       final now = DateTime.now();
-      if (lastSeen.year == now.year && lastSeen.month == now.month && lastSeen.day == now.day) {
-        statusText = l10n.lastSeenAt('${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}');
+      if (lastSeen.year == now.year &&
+          lastSeen.month == now.month &&
+          lastSeen.day == now.day) {
+        statusText = l10n.lastSeenAt(
+          '${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
+        );
       } else {
-        statusText = l10n.lastSeen('${lastSeen.day}/${lastSeen.month}/${lastSeen.year}');
+        statusText = l10n.lastSeen(
+          '${lastSeen.day}/${lastSeen.month}/${lastSeen.year}',
+        );
       }
     }
 
@@ -248,7 +263,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         decoration: BoxDecoration(
                           color: Colors.greenAccent[400],
                           shape: BoxShape.circle,
-                          border: Border.all(color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface, width: 2),
+                          border: Border.all(
+                            color:
+                                theme.appBarTheme.backgroundColor ??
+                                theme.colorScheme.surface,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -259,14 +279,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(widget.chatName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  Text(
+                    widget.chatName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
                   if (chat != null)
                     Text(
                       statusText,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: isOnline ? Colors.greenAccent[400] : theme.textTheme.bodyMedium?.color?.withAlpha(150),
+                        color: isOnline
+                            ? Colors.greenAccent[400]
+                            : theme.textTheme.bodyMedium?.color?.withAlpha(150),
                       ),
                     ),
                 ],
@@ -287,17 +315,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.lock_outline, size: 64, color: theme.iconTheme.color?.withAlpha(50)),
+                        Icon(
+                          Icons.lock_outline,
+                          size: 64,
+                          color: theme.iconTheme.color?.withAlpha(50),
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           l10n.endToEndEncrypted,
-                          style: TextStyle(color: theme.textTheme.bodyLarge?.color?.withAlpha(200), fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: theme.textTheme.bodyLarge?.color?.withAlpha(
+                              200,
+                            ),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           l10n.noOneOutside,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 14),
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color?.withAlpha(
+                              150,
+                            ),
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -310,47 +353,78 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   itemBuilder: (context, index) {
                     final msg = messages[index];
                     final isMe = msg.senderId == 'me';
-                    
+
                     return ChatBubble(message: msg, isMe: isMe);
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator(color: Colors.blueAccent)),
-              error: (err, st) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: Colors.blueAccent),
+              ),
+              error: (err, st) => Center(
+                child: Text(
+                  'Error: $err',
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+              ),
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 12.0,
+            ),
             decoration: BoxDecoration(
               color: theme.cardColor,
-              border: Border(top: BorderSide(color: theme.dividerColor.withAlpha(25), width: 1)),
+              border: Border(
+                top: BorderSide(
+                  color: theme.dividerColor.withAlpha(25),
+                  width: 1,
+                ),
+              ),
             ),
             child: SafeArea(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.add_circle_outline, color: theme.iconTheme.color?.withAlpha(150), size: 28),
+                    icon: Icon(
+                      Icons.add_circle_outline,
+                      color: theme.iconTheme.color?.withAlpha(150),
+                      size: 28,
+                    ),
                     onPressed: _showAttachmentOptions,
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: TextField(
                       controller: _textController,
-                      style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 16),
+                      style: TextStyle(
+                        color: theme.textTheme.bodyLarge?.color,
+                        fontSize: 16,
+                      ),
                       minLines: 1,
                       maxLines: 5,
                       textInputAction: TextInputAction.send,
                       decoration: InputDecoration(
                         hintText: l10n.secureMessage,
-                        hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
+                        hintStyle: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color?.withAlpha(
+                            150,
+                          ),
+                        ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade100,
+                        fillColor: isDark
+                            ? const Color(0xFF2C2C2C)
+                            : Colors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                       ),
                       onSubmitted: (_) => _sendMessage(),
                     ),
@@ -380,4 +454,3 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 }
-

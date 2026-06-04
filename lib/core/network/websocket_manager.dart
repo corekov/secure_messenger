@@ -10,19 +10,16 @@ class WebSocketManager extends _$WebSocketManager {
   @override
   void build() {
     // Listen to authentication state changes
-    ref.listen<bool>(
-      authProvider,
-      (previous, isAuthenticated) {
-        final wsService = ref.read(webSocketServiceProvider);
-        if (isAuthenticated) {
-          wsService.connect();
-        } else {
-          wsService.disconnect();
-        }
-      },
-    );
+    ref.listen<bool>(authProvider, (previous, isAuthenticated) {
+      final wsService = ref.read(webSocketServiceProvider);
+      if (isAuthenticated) {
+        wsService.connect();
+      } else {
+        wsService.disconnect();
+      }
+    });
   }
-  
+
   void sendMessage(Map<String, dynamic> payload) {
     ref.read(webSocketServiceProvider).send(payload);
   }

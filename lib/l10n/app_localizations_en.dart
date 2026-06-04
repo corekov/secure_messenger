@@ -240,4 +240,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToRetry => 'Tap to retry';
+
+  @override
+  String get deleteForMe => 'Delete for me';
+
+  @override
+  String get deleteForEveryone => 'Delete for everyone';
+
+  @override
+  String get messageDeleted => 'Message deleted';
 }

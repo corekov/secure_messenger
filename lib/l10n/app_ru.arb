@@ -73,5 +73,8 @@
   "avatarUpdateFailed": "Ошибка обновления аватара: {error}",
   "bioUpdated": "Информация обновлена",
   "bioUpdateFailed": "Ошибка обновления информации: {error}",
-  "tapToRetry": "Нажмите, чтобы повторить"
+  "tapToRetry": "Нажмите, чтобы повторить",
+  "deleteForMe": "Удалить у меня",
+  "deleteForEveryone": "Удалить у всех",
+  "messageDeleted": "Сообщение удалено"
 }

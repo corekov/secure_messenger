@@ -239,103 +239,102 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     type: MaterialType.transparency,
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 8,
-                    ),
-                    leading: Stack(
-                      children: [
-                        AuthenticatedAvatar(
-                          avatarUrl: chat.avatarUrl,
-                          fallbackText: chat.name,
-                          radius: 28,
-                        ),
-                        if (chat.isOnline)
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: Colors.greenAccent[400],
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: theme.scaffoldBackgroundColor,
-                                  width: 2,
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
+                      leading: Stack(
+                        children: [
+                          AuthenticatedAvatar(
+                            avatarUrl: chat.avatarUrl,
+                            fallbackText: chat.name,
+                            radius: 28,
+                          ),
+                          if (chat.isOnline)
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: Colors.greenAccent[400],
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: theme.scaffoldBackgroundColor,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    title: Text(
-                      chat.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        ],
                       ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        _formatLastMessage(chat.lastMessage, l10n),
-                        style: TextStyle(
-                          color: theme.textTheme.bodyMedium?.color?.withAlpha(
-                            140,
-                          ),
-                          fontSize: 14,
+                      title: Text(
+                        chat.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          _formatTime(chat.lastMessageTime),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          _formatLastMessage(chat.lastMessage, l10n),
                           style: TextStyle(
                             color: theme.textTheme.bodyMedium?.color?.withAlpha(
-                              100,
+                              140,
                             ),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        if (chat.unreadCount > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _formatTime(chat.lastMessageTime),
+                            style: TextStyle(
+                              color: theme.textTheme.bodyMedium?.color
+                                  ?.withAlpha(100),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.blueAccent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${chat.unreadCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                          ),
+                          const SizedBox(height: 8),
+                          if (chat.unreadCount > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
                               ),
-                            ),
-                          )
-                        else
-                          const SizedBox(height: 20),
-                      ],
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${chat.unreadCount}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox(height: 20),
+                        ],
+                      ),
+                      onTap: () {
+                        context.push('/chat/${chat.id}', extra: chat.name);
+                      },
                     ),
-                    onTap: () {
-                      context.push('/chat/${chat.id}', extra: chat.name);
-                    },
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
           loading: () => const Center(
             child: CircularProgressIndicator(color: Colors.blueAccent),
           ),
@@ -347,25 +346,28 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           ),
         ),
       ),
-      floatingActionButton: AnimatedScale(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        scale: _showFab ? 1.0 : 0.0,
-        child: FloatingActionButton(
-          onPressed: () {
-            context.push('/create-chat');
-          },
-          backgroundColor: Colors.blueAccent,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(100),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90.0),
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          scale: _showFab ? 1.0 : 0.0,
+          child: FloatingActionButton(
+            onPressed: () {
+              context.push('/create-chat');
+            },
+            backgroundColor: Colors.blueAccent,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: const Icon(Icons.maps_ugc, color: Colors.white, size: 30),
           ),
-          child: const Icon(Icons.maps_ugc, color: Colors.white, size: 30),
         ),
       ),
     );
   }
-  
+
   String _formatLastMessage(String lastMessage, AppLocalizations l10n) {
     if (lastMessage == 'Secure message' ||
         lastMessage == 'Decryption failed' ||
@@ -373,7 +375,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         lastMessage == 'Ошибка расшифровки') {
       return l10n.secureMessageFallback;
     }
-    
+
     if (lastMessage.startsWith('{') && lastMessage.contains('"type"')) {
       try {
         final payload = jsonDecode(lastMessage);

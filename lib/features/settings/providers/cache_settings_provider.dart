@@ -11,7 +11,7 @@ class CacheSettings extends _$CacheSettings {
   int build() {
     // 0 means never clear. Default to 0.
     _loadFromPrefs();
-    return 0; 
+    return 0;
   }
 
   Future<void> _loadFromPrefs() async {

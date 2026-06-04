@@ -29,7 +29,10 @@ class SecureStorageService {
     return await _storage.read(key: _refreshTokenKey);
   }
 
-  Future<void> saveKeyPair({required String privateKey, required String publicKey}) async {
+  Future<void> saveKeyPair({
+    required String privateKey,
+    required String publicKey,
+  }) async {
     await _storage.write(key: _privateKeyKey, value: privateKey);
     await _storage.write(key: _publicKeyKey, value: publicKey);
   }

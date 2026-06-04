@@ -26,14 +26,8 @@ class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
 
   RouterNotifier(this._ref) {
-    _ref.listen<bool>(
-      authProvider,
-      (previous, next) => notifyListeners(),
-    );
-    _ref.listen<bool>(
-      authInitProvider,
-      (previous, next) => notifyListeners(),
-    );
+    _ref.listen<bool>(authProvider, (previous, next) => notifyListeners());
+    _ref.listen<bool>(authInitProvider, (previous, next) => notifyListeners());
   }
 }
 
@@ -60,7 +54,11 @@ GoRouter appRouter(Ref ref) {
         return '/login';
       }
 
-      if (isAuthenticated && (isGoingToLogin || isGoingToRegister || isGoingToLoading || state.matchedLocation == '/')) {
+      if (isAuthenticated &&
+          (isGoingToLogin ||
+              isGoingToRegister ||
+              isGoingToLoading ||
+              state.matchedLocation == '/')) {
         return '/chats';
       }
 
@@ -77,15 +75,9 @@ GoRouter appRouter(Ref ref) {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'assets/app_logo.png',
-                    width: 80,
-                    height: 80,
-                  ),
+                  Image.asset('assets/app_logo.png', width: 80, height: 80),
                   const SizedBox(height: 24),
-                  const CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
+                  const CircularProgressIndicator(color: Colors.white),
                 ],
               ),
             ),

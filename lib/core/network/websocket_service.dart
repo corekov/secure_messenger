@@ -4,7 +4,6 @@ import 'dart:developer' as developer;
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -16,7 +15,7 @@ class WebSocketService {
   final SecureStorageService _storage;
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;
-  
+
   final _messageController = StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get messages => _messageController.stream;
 
@@ -24,7 +23,7 @@ class WebSocketService {
   int _reconnectAttempts = 0;
   Timer? _reconnectTimer;
   final List<Map<String, dynamic>> _offlineQueue = [];
-  
+
   static const int _maxReconnectAttempts = 10;
   static final String _apiUrl = String.fromEnvironment(
     'API_URL',
@@ -35,7 +34,7 @@ class WebSocketService {
 
   static final String _wsUrl = String.fromEnvironment(
     'WS_URL',
-    defaultValue: _apiUrl.startsWith('https') 
+    defaultValue: _apiUrl.startsWith('https')
         ? '${_apiUrl.replaceFirst('https', 'wss')}/ws'
         : '${_apiUrl.replaceFirst('http', 'ws')}/ws',
   );
@@ -47,7 +46,8 @@ class WebSocketService {
 
     try {
       final token = await _storage.getAccessToken();
-      if (token == null) throw Exception('No auth token available for WebSocket');
+      if (token == null)
+        throw Exception('No auth token available for WebSocket');
 
       // Connect with token in headers (or modify URL if backend requires query param)
       _channel = WebSocketChannel.connect(
@@ -56,30 +56,49 @@ class WebSocketService {
 
       _isConnected = true;
       _reconnectAttempts = 0;
-      developer.log('WebSocket connected successfully', name: 'WebSocketService');
-      
+      developer.log(
+        'WebSocket connected successfully',
+        name: 'WebSocketService',
+      );
+
       _flushQueue();
 
       _subscription = _channel!.stream.listen(
         (message) {
           try {
-            final decoded = jsonDecode(message as String) as Map<String, dynamic>;
+            final decoded =
+                jsonDecode(message as String) as Map<String, dynamic>;
             _messageController.add(decoded);
           } catch (e) {
-            developer.log('Failed to decode WS message', error: e, name: 'WebSocketService');
+            developer.log(
+              'Failed to decode WS message',
+              error: e,
+              name: 'WebSocketService',
+            );
           }
         },
         onDone: () {
-          developer.log('WebSocket connection closed', name: 'WebSocketService');
+          developer.log(
+            'WebSocket connection closed',
+            name: 'WebSocketService',
+          );
           _handleDisconnect();
         },
         onError: (error) {
-          developer.log('WebSocket error', error: error, name: 'WebSocketService');
+          developer.log(
+            'WebSocket error',
+            error: error,
+            name: 'WebSocketService',
+          );
           _handleDisconnect();
         },
       );
     } catch (e) {
-      developer.log('WebSocket connection failed', error: e, name: 'WebSocketService');
+      developer.log(
+        'WebSocket connection failed',
+        error: e,
+        name: 'WebSocketService',
+      );
       _handleDisconnect();
     }
   }
@@ -92,16 +111,22 @@ class WebSocketService {
 
   void _attemptReconnect() {
     if (_reconnectAttempts >= _maxReconnectAttempts) {
-      developer.log('Max reconnect attempts reached. Giving up.', name: 'WebSocketService');
+      developer.log(
+        'Max reconnect attempts reached. Giving up.',
+        name: 'WebSocketService',
+      );
       return;
     }
 
     final backoffDuration = Duration(
       milliseconds: min(10000, 1000 * pow(2, _reconnectAttempts)).toInt(),
     );
-    
+
     _reconnectAttempts++;
-    developer.log('Reconnecting in ${backoffDuration.inSeconds} seconds (Attempt $_reconnectAttempts)', name: 'WebSocketService');
+    developer.log(
+      'Reconnecting in ${backoffDuration.inSeconds} seconds (Attempt $_reconnectAttempts)',
+      name: 'WebSocketService',
+    );
 
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(backoffDuration, connect);
@@ -111,14 +136,20 @@ class WebSocketService {
     if (_isConnected && _channel != null) {
       _channel!.sink.add(jsonEncode(data));
     } else {
-      developer.log('Cannot send message, WebSocket disconnected. Queuing message.', name: 'WebSocketService');
+      developer.log(
+        'Cannot send message, WebSocket disconnected. Queuing message.',
+        name: 'WebSocketService',
+      );
       _offlineQueue.add(data);
     }
   }
 
   void _flushQueue() {
     if (_offlineQueue.isNotEmpty) {
-      developer.log('Flushing ${_offlineQueue.length} queued messages.', name: 'WebSocketService');
+      developer.log(
+        'Flushing ${_offlineQueue.length} queued messages.',
+        name: 'WebSocketService',
+      );
       while (_offlineQueue.isNotEmpty && _isConnected && _channel != null) {
         final data = _offlineQueue.removeAt(0);
         _channel!.sink.add(jsonEncode(data));
@@ -148,10 +179,10 @@ class WebSocketService {
 WebSocketService webSocketService(Ref ref) {
   final storage = ref.watch(secureStorageServiceProvider);
   final service = WebSocketService(storage);
-  
+
   ref.onDispose(() {
     service.dispose();
   });
-  
+
   return service;
 }

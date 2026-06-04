@@ -11,6 +11,7 @@ class MessageModel {
   final int? fileSize;
   final String? localFilePath;
   final String status;
+  final bool isDeleted;
 
   const MessageModel({
     required this.id,
@@ -25,6 +26,7 @@ class MessageModel {
     this.fileSize,
     this.localFilePath,
     this.status = 'sent',
+    this.isDeleted = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +43,7 @@ class MessageModel {
       'file_size': fileSize,
       'local_file_path': localFilePath,
       'status': status,
+      'is_deleted': isDeleted ? 1 : 0,
     };
   }
 
@@ -58,6 +61,39 @@ class MessageModel {
       fileSize: map['file_size'] as int?,
       localFilePath: map['local_file_path'] as String?,
       status: map['status'] as String? ?? 'sent',
+      isDeleted: (map['is_deleted'] as int?) == 1,
+    );
+  }
+
+  MessageModel copyWith({
+    String? id,
+    String? chatId,
+    String? senderId,
+    String? content,
+    DateTime? timestamp,
+    bool? isRead,
+    String? messageType,
+    String? fileId,
+    String? fileName,
+    int? fileSize,
+    String? localFilePath,
+    String? status,
+    bool? isDeleted,
+  }) {
+    return MessageModel(
+      id: id ?? this.id,
+      chatId: chatId ?? this.chatId,
+      senderId: senderId ?? this.senderId,
+      content: content ?? this.content,
+      timestamp: timestamp ?? this.timestamp,
+      isRead: isRead ?? this.isRead,
+      messageType: messageType ?? this.messageType,
+      fileId: fileId ?? this.fileId,
+      fileName: fileName ?? this.fileName,
+      fileSize: fileSize ?? this.fileSize,
+      localFilePath: localFilePath ?? this.localFilePath,
+      status: status ?? this.status,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }

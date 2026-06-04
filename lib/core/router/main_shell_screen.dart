@@ -14,7 +14,7 @@ class MainShellScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      extendBody: false, // Prevents nested navigator overlays (like dropdowns) from rendering under the bottom nav bar
+      extendBody: true, // Required for the frosted glass BottomNavigationBar effect to be visible
       body: navigationShell,
       bottomNavigationBar: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -37,44 +37,55 @@ class MainShellScreen extends StatelessWidget {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
-                  color: (Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).cardColor).withValues(alpha: isDark ? 0.8 : 0.85),
+                  color:
+                      (Theme.of(
+                                context,
+                              ).bottomNavigationBarTheme.backgroundColor ??
+                              Theme.of(context).cardColor)
+                          .withValues(alpha: isDark ? 0.8 : 0.85),
                   child: BottomNavigationBar(
                     elevation: 0,
                     backgroundColor: Colors.transparent,
-                    selectedItemColor: isDark ? Colors.blueAccent : Theme.of(context).primaryColor,
+                    selectedItemColor: isDark
+                        ? Colors.blueAccent
+                        : Theme.of(context).primaryColor,
                     unselectedItemColor: isDark ? Colors.white : Colors.black87,
-                    selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    selectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                     showSelectedLabels: true,
                     showUnselectedLabels: true,
-                type: BottomNavigationBarType.fixed,
-                currentIndex: navigationShell.currentIndex,
-                onTap: (int index) {
-                  navigationShell.goBranch(
-                    index,
-                    initialLocation: index == navigationShell.currentIndex,
-                  );
-                },
-                items: [
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.chat_bubble_outline),
-                    activeIcon: const Icon(Icons.chat_bubble),
-                    label: l10n.chatsTitle,
+                    type: BottomNavigationBarType.fixed,
+                    currentIndex: navigationShell.currentIndex,
+                    onTap: (int index) {
+                      navigationShell.goBranch(
+                        index,
+                        initialLocation: index == navigationShell.currentIndex,
+                      );
+                    },
+                    items: [
+                      BottomNavigationBarItem(
+                        icon: const Icon(Icons.chat_bubble_outline),
+                        activeIcon: const Icon(Icons.chat_bubble),
+                        label: l10n.chatsTitle,
+                      ),
+                      BottomNavigationBarItem(
+                        icon: const Icon(Icons.person_outline),
+                        activeIcon: const Icon(Icons.person),
+                        label: l10n.profile,
+                      ),
+                      BottomNavigationBarItem(
+                        icon: const Icon(Icons.settings_outlined),
+                        activeIcon: const Icon(Icons.settings),
+                        label: l10n.settings,
+                      ),
+                    ],
                   ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.person_outline),
-                    activeIcon: const Icon(Icons.person),
-                    label: l10n.profile,
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.settings_outlined),
-                    activeIcon: const Icon(Icons.settings),
-                    label: l10n.settings,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
             ),
           ),
         ),

@@ -240,4 +240,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get tapToRetry => 'Нажмите, чтобы повторить';
+
+  @override
+  String get deleteForMe => 'Удалить у меня';
+
+  @override
+  String get deleteForEveryone => 'Удалить у всех';
+
+  @override
+  String get messageDeleted => 'Сообщение удалено';
 }

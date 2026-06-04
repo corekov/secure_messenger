@@ -77,7 +77,9 @@ class _MediaViewerScreenState extends State<MediaViewerScreen> {
           Center(
             child: IconButton(
               icon: Icon(
-                _videoController!.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                _videoController!.value.isPlaying
+                    ? Icons.pause
+                    : Icons.play_arrow,
                 color: Colors.white,
                 size: 50.0,
               ),

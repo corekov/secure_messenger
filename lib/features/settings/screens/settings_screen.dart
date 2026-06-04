@@ -17,11 +17,9 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings),
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
         children: [
           _buildSettingsTile(
             context,
@@ -65,7 +63,11 @@ class SettingsScreen extends ConsumerWidget {
       clipBehavior: Clip.hardEdge,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(10)
+              : Colors.black.withAlpha(10),
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -77,7 +79,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
           child: Icon(icon, color: iconColor, size: 24),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 13)),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
@@ -85,14 +90,23 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildThemeTile(BuildContext context, WidgetRef ref, ThemeMode currentMode, AppLocalizations l10n) {
+  Widget _buildThemeTile(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode currentMode,
+    AppLocalizations l10n,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Theme.of(context).cardColor,
       clipBehavior: Clip.hardEdge,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(10)
+              : Colors.black.withAlpha(10),
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -102,9 +116,16 @@ class SettingsScreen extends ConsumerWidget {
             color: Colors.purpleAccent.withAlpha(30),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.palette_outlined, color: Colors.purpleAccent, size: 24),
+          child: const Icon(
+            Icons.palette_outlined,
+            color: Colors.purpleAccent,
+            size: 24,
+          ),
         ),
-        title: Text(l10n.appearance, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        title: Text(
+          l10n.appearance,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
         subtitle: Text(l10n.chooseTheme, style: const TextStyle(fontSize: 13)),
         trailing: DropdownButton<ThemeMode>(
           value: currentMode,
@@ -125,14 +146,23 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLanguageTile(BuildContext context, WidgetRef ref, Locale currentLocale, AppLocalizations l10n) {
+  Widget _buildLanguageTile(
+    BuildContext context,
+    WidgetRef ref,
+    Locale currentLocale,
+    AppLocalizations l10n,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Theme.of(context).cardColor,
       clipBehavior: Clip.hardEdge,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(10)
+              : Colors.black.withAlpha(10),
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -142,10 +172,20 @@ class SettingsScreen extends ConsumerWidget {
             color: Colors.tealAccent.withAlpha(30),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.language_outlined, color: Colors.teal, size: 24),
+          child: const Icon(
+            Icons.language_outlined,
+            color: Colors.teal,
+            size: 24,
+          ),
         ),
-        title: Text(l10n.language, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-        subtitle: Text(currentLocale.languageCode == 'ru' ? l10n.russian : l10n.english, style: const TextStyle(fontSize: 13)),
+        title: Text(
+          l10n.language,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        subtitle: Text(
+          currentLocale.languageCode == 'ru' ? l10n.russian : l10n.english,
+          style: const TextStyle(fontSize: 13),
+        ),
         trailing: DropdownButton<String>(
           value: currentLocale.languageCode,
           underline: const SizedBox(),
@@ -164,9 +204,14 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStorageTile(BuildContext context, WidgetRef ref, int currentRetention, AppLocalizations l10n) {
+  Widget _buildStorageTile(
+    BuildContext context,
+    WidgetRef ref,
+    int currentRetention,
+    AppLocalizations l10n,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     String getLabel(int days) {
       if (days == 0) return l10n.never;
       if (days == 1) return l10n.oneDay;
@@ -174,13 +219,17 @@ class SettingsScreen extends ConsumerWidget {
       if (days == 30) return l10n.oneMonth;
       return '$days Days';
     }
-    
+
     return Material(
       color: Theme.of(context).cardColor,
       clipBehavior: Clip.hardEdge,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? Colors.white.withAlpha(10) : Colors.black.withAlpha(10)),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withAlpha(10)
+              : Colors.black.withAlpha(10),
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -190,10 +239,20 @@ class SettingsScreen extends ConsumerWidget {
             color: Colors.orangeAccent.withAlpha(30),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.storage_outlined, color: Colors.orange, size: 24),
+          child: const Icon(
+            Icons.storage_outlined,
+            color: Colors.orange,
+            size: 24,
+          ),
         ),
-        title: Text(l10n.storageAndData, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-        subtitle: Text(l10n.autoClearCache, style: const TextStyle(fontSize: 13)),
+        title: Text(
+          l10n.storageAndData,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        ),
+        subtitle: Text(
+          l10n.autoClearCache,
+          style: const TextStyle(fontSize: 13),
+        ),
         trailing: DropdownButton<int>(
           value: currentRetention,
           underline: const SizedBox(),

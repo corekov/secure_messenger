@@ -82,12 +82,17 @@ class Profile extends _$Profile {
     final dio = ref.read(dioClientProvider);
     try {
       final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(imageFile.path, filename: 'avatar.jpg'),
+        'file': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: 'avatar.jpg',
+        ),
       });
       final response = await dio.post('/auth/me/avatar', data: formData);
       if (response.statusCode == 200 && response.data['avatar_url'] != null) {
         if (state.value != null) {
-          state = AsyncValue.data(state.value!.copyWith(avatarUrl: response.data['avatar_url']));
+          state = AsyncValue.data(
+            state.value!.copyWith(avatarUrl: response.data['avatar_url']),
+          );
         }
       }
     } catch (e) {

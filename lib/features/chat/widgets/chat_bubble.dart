@@ -12,11 +12,7 @@ class ChatBubble extends ConsumerStatefulWidget {
   final MessageModel message;
   final bool isMe;
 
-  const ChatBubble({
-    super.key,
-    required this.message,
-    required this.isMe,
-  });
+  const ChatBubble({super.key, required this.message, required this.isMe});
 
   @override
   ConsumerState<ChatBubble> createState() => _ChatBubbleState();
@@ -35,19 +31,19 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
   Future<void> _saveToDevice() async {
     final path = widget.message.localFilePath;
     if (path == null) return;
-    
+
     try {
       final hasAccess = await Gal.hasAccess();
       if (!hasAccess) {
         await Gal.requestAccess();
       }
-      
+
       if (widget.message.messageType == 'image') {
         await Gal.putImage(path);
       } else if (widget.message.messageType == 'video') {
         await Gal.putVideo(path);
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.savedToGallery)),
@@ -56,7 +52,10 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text('Failed to save: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     }
@@ -66,14 +65,17 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
     if (widget.message.localFilePath == null && widget.message.fileId != null) {
       setState(() => _isDownloading = true);
       try {
-        await ref.read(messagesProvider(widget.message.chatId).notifier).downloadFile(widget.message.id);
+        await ref
+            .read(messagesProvider(widget.message.chatId).notifier)
+            .downloadFile(widget.message.id);
       } finally {
         if (mounted) {
           setState(() => _isDownloading = false);
         }
       }
     } else if (widget.message.localFilePath != null) {
-      if (widget.message.messageType == 'image' || widget.message.messageType == 'video') {
+      if (widget.message.messageType == 'image' ||
+          widget.message.messageType == 'video') {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -87,6 +89,56 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
         OpenFilex.open(widget.message.localFilePath!);
       }
     }
+  }
+
+  void _handleLongPress() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.delete_outline,
+                color: Colors.redAccent,
+              ),
+              title: Text(
+                l10n.deleteForMe,
+                style: const TextStyle(color: Colors.redAccent),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                ref
+                    .read(messagesProvider(widget.message.chatId).notifier)
+                    .deleteMessage(widget.message, forEveryone: false);
+              },
+            ),
+            if (widget.isMe)
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_forever,
+                  color: Colors.redAccent,
+                ),
+                title: Text(
+                  l10n.deleteForEveryone,
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  ref
+                      .read(messagesProvider(widget.message.chatId).notifier)
+                      .deleteMessage(widget.message, forEveryone: true);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -104,19 +156,20 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
     } else if (widget.message.messageType == 'file') {
       contentWidget = _buildFileContent(theme, l10n);
     } else {
-      final text = (widget.message.content == 'Secure message' || 
-                    widget.message.content == 'Decryption failed' || 
-                    widget.message.content == 'Decryption error' || 
-                    widget.message.content == 'Ошибка расшифровки') 
-          ? l10n.secureMessageFallback 
+      final text =
+          (widget.message.content == 'Secure message' ||
+              widget.message.content == 'Decryption failed' ||
+              widget.message.content == 'Decryption error' ||
+              widget.message.content == 'Ошибка расшифровки')
+          ? l10n.secureMessageFallback
           : widget.message.content;
-          
+
       contentWidget = Text(
         text,
         style: TextStyle(
-          color: widget.isMe ? Colors.white : theme.textTheme.bodyLarge?.color, 
-          fontSize: 16, 
-          height: 1.3
+          color: widget.isMe ? Colors.white : theme.textTheme.bodyLarge?.color,
+          fontSize: 16,
+          height: 1.3,
         ),
       );
     }
@@ -125,18 +178,21 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
       alignment: widget.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
         onTap: _handleTap,
+        onLongPress: _handleLongPress,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
-            gradient: widget.isMe 
-              ? const LinearGradient(
-                  colors: [Color(0xFF2879FE), Color(0xFF1E5BBF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-            color: widget.isMe ? null : (isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade200),
+            gradient: widget.isMe
+                ? const LinearGradient(
+                    colors: [Color(0xFF2879FE), Color(0xFF1E5BBF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: widget.isMe
+                ? null
+                : (isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade200),
             borderRadius: BorderRadius.circular(20).copyWith(
               bottomRight: widget.isMe ? const Radius.circular(4) : null,
               bottomLeft: !widget.isMe ? const Radius.circular(4) : null,
@@ -150,7 +206,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
             ],
           ),
           child: Column(
-            crossAxisAlignment: widget.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: widget.isMe
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               contentWidget,
               const SizedBox(height: 4),
@@ -161,7 +219,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
                     '${widget.message.timestamp.hour.toString().padLeft(2, '0')}:${widget.message.timestamp.minute.toString().padLeft(2, '0')}',
                     style: TextStyle(
                       fontSize: 10,
-                      color: widget.isMe ? Colors.white70 : (isDark ? Colors.white54 : Colors.black54),
+                      color: widget.isMe
+                          ? Colors.white70
+                          : (isDark ? Colors.white54 : Colors.black54),
                     ),
                   ),
                   if (widget.isMe) ...[
@@ -180,7 +240,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
   Widget _buildStatusIcon() {
     IconData icon;
     Color color = Colors.white70;
-    
+
     switch (widget.message.status) {
       case 'sending':
         icon = Icons.access_time;
@@ -201,30 +261,36 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
         icon = Icons.check;
         break;
     }
-    
+
     final iconWidget = Icon(icon, size: 12, color: color);
-    
+
     if (widget.message.status == 'error') {
       return GestureDetector(
         onTap: () {
-          ref.read(messagesProvider(widget.message.chatId).notifier).resendMessage(widget.message);
+          ref
+              .read(messagesProvider(widget.message.chatId).notifier)
+              .resendMessage(widget.message);
         },
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(AppLocalizations.of(context)!.tapToRetry, style: TextStyle(fontSize: 10, color: color)),
+            Text(
+              AppLocalizations.of(context)!.tapToRetry,
+              style: TextStyle(fontSize: 10, color: color),
+            ),
             const SizedBox(width: 4),
             iconWidget,
           ],
         ),
       );
     }
-    
+
     return iconWidget;
   }
 
   Widget _buildImageContent(ThemeData theme, AppLocalizations l10n) {
-    if (widget.message.localFilePath != null && File(widget.message.localFilePath!).existsSync()) {
+    if (widget.message.localFilePath != null &&
+        File(widget.message.localFilePath!).existsSync()) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -242,7 +308,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
         ],
       );
     }
-    
+
     return _buildDownloadPrompt(Icons.image, l10n.photoTapToDownload, theme);
   }
 
@@ -259,7 +325,11 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Center(
-              child: Icon(Icons.play_circle_fill, size: 64, color: Colors.white70),
+              child: Icon(
+                Icons.play_circle_fill,
+                size: 64,
+                color: Colors.white70,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -267,7 +337,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
         ],
       );
     }
-    
+
     return _buildDownloadPrompt(Icons.videocam, l10n.videoTapToDownload, theme);
   }
 
@@ -279,7 +349,11 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.insert_drive_file, color: widget.isMe ? Colors.white : theme.iconTheme.color, size: 32),
+              Icon(
+                Icons.insert_drive_file,
+                color: widget.isMe ? Colors.white : theme.iconTheme.color,
+                size: 32,
+              ),
               const SizedBox(width: 12),
               Flexible(
                 child: Column(
@@ -287,14 +361,26 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
                   children: [
                     Text(
                       widget.message.fileName ?? 'File',
-                      style: TextStyle(color: widget.isMe ? Colors.white : theme.textTheme.bodyLarge?.color, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: widget.isMe
+                            ? Colors.white
+                            : theme.textTheme.bodyLarge?.color,
+                        fontWeight: FontWeight.bold,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      widget.message.fileSize != null ? _formatFileSize(widget.message.fileSize!) : '',
-                      style: TextStyle(color: widget.isMe ? Colors.white70 : theme.textTheme.bodyMedium?.color?.withAlpha(150), fontSize: 12),
+                      widget.message.fileSize != null
+                          ? _formatFileSize(widget.message.fileSize!)
+                          : '',
+                      style: TextStyle(
+                        color: widget.isMe
+                            ? Colors.white70
+                            : theme.textTheme.bodyMedium?.color?.withAlpha(150),
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -307,24 +393,30 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
       );
     }
 
-    return _buildDownloadPrompt(Icons.insert_drive_file, widget.message.fileName ?? 'Tap to download', theme);
+    return _buildDownloadPrompt(
+      Icons.insert_drive_file,
+      widget.message.fileName ?? 'Tap to download',
+      theme,
+    );
   }
 
   Widget _buildDownloadPrompt(IconData icon, String title, ThemeData theme) {
     final color = widget.isMe ? Colors.white : theme.iconTheme.color;
-    final textColor = widget.isMe ? Colors.white : theme.textTheme.bodyMedium?.color;
-    
+    final textColor = widget.isMe
+        ? Colors.white
+        : theme.textTheme.bodyMedium?.color;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (_isDownloading)
           SizedBox(
-            width: 48, 
-            height: 48, 
+            width: 48,
+            height: 48,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircularProgressIndicator(color: color, strokeWidth: 3),
-            )
+            ),
           )
         else
           Icon(icon, color: color, size: 48),
@@ -332,13 +424,21 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+            ),
             if (widget.message.fileSize != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   _formatFileSize(widget.message.fileSize!),
-                  style: TextStyle(color: widget.isMe ? Colors.white70 : textColor?.withAlpha(150), fontSize: 12),
+                  style: TextStyle(
+                    color: widget.isMe
+                        ? Colors.white70
+                        : textColor?.withAlpha(150),
+                    fontSize: 12,
+                  ),
                 ),
               ),
           ],
@@ -348,15 +448,20 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
   }
 
   Widget _buildActionRow(ThemeData theme) {
-    final textColor = widget.isMe ? Colors.white70 : theme.textTheme.bodyMedium?.color?.withAlpha(150);
+    final textColor = widget.isMe
+        ? Colors.white70
+        : theme.textTheme.bodyMedium?.color?.withAlpha(150);
     final isDocument = widget.message.messageType == 'file';
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (widget.message.fileSize != null)
-          Text(_formatFileSize(widget.message.fileSize!), style: TextStyle(color: textColor, fontSize: 12)),
+          Text(
+            _formatFileSize(widget.message.fileSize!),
+            style: TextStyle(color: textColor, fontSize: 12),
+          ),
         const SizedBox(width: 16),
         InkWell(
           onTap: isDocument ? _handleTap : _saveToDevice,
@@ -364,13 +469,20 @@ class _ChatBubbleState extends ConsumerState<ChatBubble> {
             padding: const EdgeInsets.all(4.0),
             child: Row(
               children: [
-                Icon(isDocument ? Icons.open_in_new : Icons.download, size: 16, color: textColor),
+                Icon(
+                  isDocument ? Icons.open_in_new : Icons.download,
+                  size: 16,
+                  color: textColor,
+                ),
                 const SizedBox(width: 4),
-                Text(isDocument ? 'Open' : AppLocalizations.of(context)!.save, style: TextStyle(color: textColor, fontSize: 12)),
+                Text(
+                  isDocument ? 'Open' : AppLocalizations.of(context)!.save,
+                  style: TextStyle(color: textColor, fontSize: 12),
+                ),
               ],
             ),
           ),
-        )
+        ),
       ],
     );
   }

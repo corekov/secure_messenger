@@ -32,8 +32,8 @@ class ChatMessagePayload {
       senderId: json['sender_id'] as String?,
       receiverId: json['receiver_id'] as String?,
       content: json['content'] as String?,
-      timestamp: json['timestamp'] != null 
-          ? DateTime.parse(json['timestamp'] as String) 
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'] as String)
           : null,
       fileId: json['file_id'] as String?,
       fileKey: json['file_key'] as String?,

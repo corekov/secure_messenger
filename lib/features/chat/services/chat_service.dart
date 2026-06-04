@@ -16,10 +16,13 @@ class ChatService {
   }
 
   Future<Map<String, dynamic>> createDirectChat(String targetUserId) async {
-    final response = await _dio.post('/chats', data: {
-      'type': 'direct',
-      'member_ids': [targetUserId]
-    });
+    final response = await _dio.post(
+      '/chats',
+      data: {
+        'type': 'direct',
+        'member_ids': [targetUserId],
+      },
+    );
     return response.data as Map<String, dynamic>;
   }
 

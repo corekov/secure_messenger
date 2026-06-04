@@ -22,7 +22,7 @@ class EncryptionService {
 
     if (privKeyBase64 == null || pubKeyBase64 == null) {
       _keyPair = await _keyExchangeAlgorithm.newKeyPair();
-      
+
       final privBytes = await _keyPair!.extractPrivateKeyBytes();
       final pubBytes = (await _keyPair!.extractPublicKey()).bytes;
 
@@ -52,7 +52,7 @@ class EncryptionService {
   /// Derives a shared secret key with a peer's public key
   Future<SecretKey> _deriveSharedSecret(String peerPublicKeyBase64) async {
     if (_keyPair == null) await initialize();
-    
+
     final peerPublicKey = SimplePublicKey(
       base64Decode(peerPublicKeyBase64),
       type: KeyPairType.x25519,
@@ -65,9 +65,12 @@ class EncryptionService {
   }
 
   /// Encrypts a plaintext message for a specific peer
-  Future<String> encryptMessage(String plaintext, String peerPublicKeyBase64) async {
+  Future<String> encryptMessage(
+    String plaintext,
+    String peerPublicKeyBase64,
+  ) async {
     final sharedSecret = await _deriveSharedSecret(peerPublicKeyBase64);
-    
+
     final secretBox = await _encryptionAlgorithm.encrypt(
       utf8.encode(plaintext),
       secretKey: sharedSecret,
@@ -84,21 +87,20 @@ class EncryptionService {
   }
 
   /// Decrypts a ciphertext message from a specific peer
-  Future<String> decryptMessage(String combinedBase64, String peerPublicKeyBase64) async {
+  Future<String> decryptMessage(
+    String combinedBase64,
+    String peerPublicKeyBase64,
+  ) async {
     final sharedSecret = await _deriveSharedSecret(peerPublicKeyBase64);
-    
+
     final combined = base64Decode(combinedBase64);
-    
+
     // Extract nonce (12 bytes for ChaCha20), mac (16 bytes), and ciphertext
     final nonce = combined.sublist(0, 12);
     final macBytes = combined.sublist(12, 28);
     final cipherText = combined.sublist(28);
 
-    final secretBox = SecretBox(
-      cipherText,
-      nonce: nonce,
-      mac: Mac(macBytes),
-    );
+    final secretBox = SecretBox(cipherText, nonce: nonce, mac: Mac(macBytes));
 
     final clearTextBytes = await _encryptionAlgorithm.decrypt(
       secretBox,

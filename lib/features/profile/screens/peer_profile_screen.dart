@@ -87,11 +87,13 @@ class PeerProfileScreen extends ConsumerWidget {
                 chat.isOnline
                     ? l10n.online
                     : (chat.lastSeen != null
-                        ? l10n.lastSeen(_formatTime(chat.lastSeen!))
-                        : l10n.offline),
+                          ? l10n.lastSeen(_formatTime(chat.lastSeen!))
+                          : l10n.offline),
                 style: TextStyle(
                   fontSize: 16,
-                  color: chat.isOnline ? Colors.greenAccent[400] : Colors.white60,
+                  color: chat.isOnline
+                      ? Colors.greenAccent[400]
+                      : Colors.white60,
                 ),
               ),
               const SizedBox(height: 48),
@@ -118,7 +120,10 @@ class PeerProfileScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.info_outline, color: theme.iconTheme.color),
+                          Icon(
+                            Icons.info_outline,
+                            color: theme.iconTheme.color,
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             l10n.aboutMe,
@@ -137,7 +142,9 @@ class PeerProfileScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: theme.cardColor,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: theme.dividerColor.withAlpha(20)),
+                          border: Border.all(
+                            color: theme.dividerColor.withAlpha(20),
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withAlpha(10),

@@ -28,6 +28,7 @@ class LocalChatRepository {
     final db = await _dbService.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'chats',
+      where: 'deleted_at IS NULL OR last_message_time > deleted_at',
       orderBy: 'last_message_time DESC',
     );
 
@@ -63,11 +64,7 @@ class LocalChatRepository {
 
   Future<void> deleteChat(String chatId) async {
     final db = await _dbService.database;
-    await db.delete(
-      'chats',
-      where: 'id = ?',
-      whereArgs: [chatId],
-    );
+    await db.delete('chats', where: 'id = ?', whereArgs: [chatId]);
     // Messages will be deleted automatically due to ON DELETE CASCADE
   }
 
@@ -96,19 +93,29 @@ class LocalChatRepository {
 
   Future<void> deleteMessage(String id) async {
     final db = await _dbService.database;
-    await db.delete(
+    await db.update(
       'messages',
+      {'is_deleted': 1},
       where: 'id = ?',
       whereArgs: [id],
     );
   }
 
-  Future<List<MessageModel>> getMessagesForChat(String chatId, {int limit = 50, int offset = 0}) async {
+  Future<List<MessageModel>> getMessagesForChat(
+    String chatId, {
+    int limit = 50,
+    int offset = 0,
+  }) async {
     final db = await _dbService.database;
+    final chat = await getChat(chatId);
+    final deletedAt = chat?.deletedAt?.millisecondsSinceEpoch;
+
     final List<Map<String, dynamic>> maps = await db.query(
       'messages',
-      where: 'chat_id = ?',
-      whereArgs: [chatId],
+      where: deletedAt != null
+          ? 'chat_id = ? AND timestamp > ? AND is_deleted = 0'
+          : 'chat_id = ? AND is_deleted = 0',
+      whereArgs: deletedAt != null ? [chatId, deletedAt] : [chatId],
       orderBy: 'timestamp DESC',
       limit: limit,
       offset: offset,
@@ -131,17 +138,19 @@ class LocalChatRepository {
 
   Future<void> clearOldCache(int retentionDays) async {
     if (retentionDays <= 0) return;
-    
+
     final db = await _dbService.database;
-    final cutoff = DateTime.now().subtract(Duration(days: retentionDays)).millisecondsSinceEpoch;
-    
+    final cutoff = DateTime.now()
+        .subtract(Duration(days: retentionDays))
+        .millisecondsSinceEpoch;
+
     // Find all messages older than cutoff that have a local file
     final maps = await db.query(
       'messages',
       where: 'timestamp < ? AND local_file_path IS NOT NULL',
       whereArgs: [cutoff],
     );
-    
+
     for (final map in maps) {
       final path = map['local_file_path'] as String?;
       if (path != null) {
@@ -153,7 +162,7 @@ class LocalChatRepository {
         } catch (_) {}
       }
     }
-    
+
     // Update db to set local_file_path to null
     await db.update(
       'messages',

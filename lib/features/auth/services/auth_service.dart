@@ -17,7 +17,8 @@ class AuthService {
     var fp = await _storage.getDeviceFingerprint();
     if (fp == null) {
       final random = Random();
-      fp = 'device-${DateTime.now().millisecondsSinceEpoch}-${random.nextInt(100000)}';
+      fp =
+          'device-${DateTime.now().millisecondsSinceEpoch}-${random.nextInt(100000)}';
       await _storage.saveDeviceFingerprint(fp);
     }
     return fp;
@@ -25,27 +26,29 @@ class AuthService {
 
   Future<void> register(String username, String password) async {
     final deviceFp = await _getOrCreateDeviceFp();
-    
-    final response = await _dio.post('/auth/register', data: {
-      'username': username,
-      'password': password,
-      'device_name': 'Flutter App',
-      'device_fp': deviceFp,
-      'platform': 'android',
-    });
-    
+
+    final response = await _dio.post(
+      '/auth/register',
+      data: {
+        'username': username,
+        'password': password,
+        'device_name': 'Flutter App',
+        'device_fp': deviceFp,
+        'platform': 'android',
+      },
+    );
+
     await _handleAuthResponse(response);
   }
 
   Future<void> login(String username, String password) async {
     final deviceFp = await _getOrCreateDeviceFp();
 
-    final response = await _dio.post('/auth/login', data: {
-      'username': username,
-      'password': password,
-      'device_fp': deviceFp,
-    });
-    
+    final response = await _dio.post(
+      '/auth/login',
+      data: {'username': username, 'password': password, 'device_fp': deviceFp},
+    );
+
     await _handleAuthResponse(response);
   }
 
@@ -54,7 +57,7 @@ class AuthService {
       final data = response.data as Map<String, dynamic>;
       final accessToken = data['access_token'] as String?;
       final refreshToken = data['refresh_token'] as String?;
-      
+
       if (accessToken != null && refreshToken != null) {
         await _storage.saveAccessToken(accessToken);
         await _storage.saveRefreshToken(refreshToken);
