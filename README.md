@@ -9,13 +9,15 @@
   <img src="assets/screenshots/register.jpg" width="200" alt="Регистрация"/>
   <img src="assets/screenshots/pincode.jpg" width="200" alt="Пин-код"/>
   <img src="assets/screenshots/chats.jpg" width="200" alt="Список чатов"/>
-  <img src="assets/screenshots/chat.jpg" width="200" alt="Обычный чат"/>
-  <img src="assets/screenshots/secretchat.jpg" width="200" alt="Секретный чат"/>
-  <img src="assets/screenshots/newchat.jpg" width="200" alt="Создание чата"/>
-  <img src="assets/screenshots/chatprofile.jpg" width="200" alt="Профиль чата"/>
   <img src="assets/screenshots/myprofile.jpg" width="200" alt="Мой профиль"/>
   <img src="assets/screenshots/settings.jpg" width="200" alt="Настройки"/>
+  <img src="assets/screenshots/newchat.jpg" width="200" alt="Создание чата"/>
+  <img src="assets/screenshots/chat.jpg" width="200" alt="Обычный чат"/>
   <img src="assets/screenshots/media.jpg" width="200" alt="Вложения"/>
+  <img src="assets/screenshots/secretchat.jpg" width="200" alt="Секретный чат"/>
+  <img src="assets/screenshots/chatprofile.jpg" width="200" alt="Профиль чата"/>
+  
+  
 </div>
 
 ## Технологический стек
